@@ -1,0 +1,66 @@
+
+# Java
+*.class
+*.log
+hs_err_pid*
+replay_pid*
+
+# Maven
+target/
+
+# IDEs
+.vscode/
+*.code-workspace
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# Antigravity
+# Não ignorar AGENTS.md nem arquivos de configuração compartilhados.
+
+# Variáveis de ambiente e arquivos locais
+.env
+.env.*
+!.env.example
+application-local.properties
+application-local.yml
+application-local.yaml
+
+# Bancos locais
+*.db
+*.sqlite
+*.sqlite3
+
+# Node.js (caso seja utilizado futuramente)
+node_modules/
+dist/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# Arquivos temporários
+*.tmp
+*.bak
+*.swp
+*.swo
