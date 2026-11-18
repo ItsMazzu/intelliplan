@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliPlan | Dashboard</title>
+
+  <!-- Tailwind CDN: ótimo para prototipação. Para produção, prefira compilar o Tailwind. -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#241b35',
+            plum: '#2b203b',
+            violet: '#7545d6',
+            lilac: '#a98be9',
+            mist: '#f7f4fa',
+            line: '#eee8f3'
+          },
+          boxShadow: {
+            soft: '0 8px 28px rgba(47, 31, 69, .07)'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+
+  <!-- Sidebar -->
+  <aside class="sidebar flex w-full flex-col text-white lg:fixed lg:inset-y-0 lg:w-[216px]">
+    <a href="#" class="flex items-center gap-3 px-6 py-7">
+      <span class="brand-mark"><i data-lucide="sparkle" class="h-7 w-7"></i></span>
+      <span class="text-xl font-extrabold tracking-tight">IntelliPlan</span>
+    </a>
+
+    <nav class="flex gap-1 overflow-x-auto px-3 pb-4 lg:flex-col lg:overflow-visible" aria-label="Navegação principal">
+      <a th:href="@{/dashboard}" href="/dashboard" class="nav-link active"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a th:href="@{/tarefas}" href="/tarefas" class="nav-link"><i data-lucide="square-check-big"></i><span>Tarefas</span></a>
+      <a th:href="@{/projetos}" href="/projetos" class="nav-link"><i data-lucide="folder"></i><span>Projetos</span></a>
+      <a th:href="@{/estudos}" href="/estudos" class="nav-link"><i data-lucide="book-open"></i><span>Estudos</span></a>
+      <a th:href="@{/agenda}" href="/agenda" class="nav-link"><i data-lucide="calendar-days"></i><span>Agenda</span></a>
+      <a th:href="@{/habitos}" href="/habitos" class="nav-link"><i data-lucide="heart"></i><span>Hábitos</span></a>
+    </nav>
+
+    <div class="mx-5 my-4 hidden border-t border-white/15 lg:block"></div>
+
+    <div class="sidebar-note mx-4 mb-5 mt-auto hidden rounded-2xl p-5 lg:block">
+      <i data-lucide="sparkles" class="mb-3 h-6 w-6 text-purple-200"></i>
+      <p class="font-bold">Você consegue!</p>
+      <p class="mt-1 text-sm leading-relaxed text-purple-100/80">Pequenos passos também constroem grandes conquistas.</p>
+      <div class="mt-4 flex justify-end"><i data-lucide="moon-star" class="h-8 w-8 text-purple-200/80"></i></div>
+    </div>
+
+    <div class="mt-auto flex items-center justify-between border-t border-white/10 px-5 py-5">
+      <div class="flex min-w-0 items-center gap-3">
+        <div class="avatar">LC</div>
+        <div class="min-w-0">
+          <p class="truncate text-sm font-semibold" th:text="${usuarioNome} ?: 'Laís Campos'">Laís Campos</p>
+          <p class="text-xs text-purple-200/70">Meu espaço</p>
+        </div>
+      </div>
+      <a th:href="@{/configuracoes}" href="/configuracoes" aria-label="Configurações"><i data-lucide="settings" class="h-5 w-5 text-purple-200"></i></a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="min-w-0 flex-1 lg:ml-[216px]">
+    <!-- Topbar -->
+    <header class="topbar sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 px-5 py-4 md:px-8">
+      <div class="relative w-full max-w-md">
+        <i data-lucide="search" class="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-purple-400"></i>
+        <input type="search" placeholder="Buscar tarefas, projetos, matérias..." class="search-input w-full rounded-full py-3 pl-11 pr-4 text-sm outline-none">
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="icon-button" aria-label="Notificações"><i data-lucide="bell"></i><span class="notification-dot"></span></button>
+        <div class="hidden h-8 border-l border-purple-100 sm:block"></div>
+        <button class="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-purple-50">
+          <div class="avatar avatar-small">LC</div>
+          <span class="hidden text-sm font-semibold sm:inline" th:text="${usuarioNome} ?: 'Laís'">Laís</span>
+          <i data-lucide="chevron-down" class="h-4 w-4"></i>
+        </button>
+        <a th:href="@{/tarefas/nova}" href="/tarefas/nova" class="primary-button"><i data-lucide="plus" class="h-4 w-4"></i><span>Nova tarefa</span></a>
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-[1600px] space-y-6 px-5 pb-10 pt-6 md:px-8">
+      <!-- Hero -->
+      <section class="hero relative overflow-hidden rounded-[28px] px-7 py-8 md:px-10 md:py-9">
+        <div class="relative z-10 max-w-xl">
+          <p class="mb-2 text-sm font-semibold uppercase tracking-[.18em] text-violet-700/80">Seu espaço de organização</p>
+          <h1 class="text-3xl font-extrabold tracking-tight text-[#241b35] md:text-4xl">
+            Olá, <span th:text="${primeiroNome} ?: 'Laís'">Laís</span>!
+            <i data-lucide="sparkles" class="ml-1 inline h-7 w-7 text-violet-500"></i>
+          </h1>
+          <p class="mt-2 text-base text-[#5f526e] md:text-lg">Sua rotina, seus objetivos e suas conquistas em um só lugar.</p>
+        </div>
+        <div class="hero-orbit" aria-hidden="true"><span>✦</span><span>☾</span><span>✧</span></div>
+      </section>
+
+      <!-- Summary / quick actions / habits -->
+      <section class="grid grid-cols-1 gap-4 xl:grid-cols-[1.25fr_1.1fr_.9fr]">
+        <article class="panel p-5">
+          <div class="mb-5 flex items-center justify-between">
+            <h2 class="section-title"><i data-lucide="chart-no-axes-column-increasing"></i>Resumo da semana</h2>
+            <span class="trend"><i data-lucide="trending-up" class="h-4 w-4"></i> +20%</span>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="metric"><strong th:text="${totalTarefas} ?: 12">12</strong><span>Tarefas</span></div>
+            <div class="metric"><strong th:text="${totalProjetos} ?: 3">3</strong><span>Projetos</span></div>
+            <div class="metric"><strong th:text="${totalHabitos} ?: 5">5</strong><span>Hábitos</span></div>
+          </div>
+          <div class="mini-chart mt-4" aria-label="Gráfico ilustrativo de atividade semanal">
+            <span style="height:35%"></span><span style="height:54%"></span><span style="height:45%"></span><span style="height:76%"></span><span style="height:62%"></span><span style="height:94%"></span><span style="height:80%"></span>
+          </div>
+        </article>
+
+        <article class="panel p-5">
+          <h2 class="section-title mb-5"><i data-lucide="zap"></i>Atalhos rápidos</h2>
+          <div class="grid grid-cols-4 gap-2">
+            <a th:href="@{/tarefas/nova}" href="/tarefas/nova" class="quick-action"><i data-lucide="square-check-big"></i><span>Nova tarefa</span></a>
+            <a th:href="@{/agenda/novo}" href="/agenda/novo" class="quick-action"><i data-lucide="calendar-plus"></i><span>Novo evento</span></a>
+            <a th:href="@{/estudos/novo}" href="/estudos/novo" class="quick-action"><i data-lucide="book-open"></i><span>Novo estudo</span></a>
+            <a th:href="@{/projetos/novo}" href="/projetos/novo" class="quick-action"><i data-lucide="folder-plus"></i><span>Novo projeto</span></a>
+          </div>
+        </article>
+
+        <article class="panel p-5">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="section-title"><i data-lucide="flame" class="text-pink-500"></i>Seus hábitos</h2>
+            <span class="streak-icon"><i data-lucide="flame"></i></span>
+          </div>
+          <p class="text-2xl font-extrabold">7 dias</p>
+          <p class="text-xs text-slate-500">de sequência</p>
+          <div class="mt-4 flex justify-between gap-1">
+            <div th:each="dia : ${diasHabitos}" class="habit-day" th:classappend="${dia.concluido} ? ' done' : ''">
+              <i th:if="${dia.concluido}" data-lucide="check" class="h-3 w-3"></i>
+              <span th:text="${dia.inicial}">S</span>
+            </div>
+            <div th:if="${diasHabitos == null}" class="contents">
+              <div class="habit-day done">S</div><div class="habit-day done">T</div><div class="habit-day done">Q</div><div class="habit-day done">Q</div><div class="habit-day done">S</div><div class="habit-day">S</div><div class="habit-day">D</div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- Middle grid -->
+      <section class="grid grid-cols-1 gap-4 2xl:grid-cols-[1.05fr_1.2fr_.95fr]">
+        <!-- Calendar -->
+        <article class="panel p-5">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="section-title"><i data-lucide="calendar-days"></i>Agenda</h2>
+            <a th:href="@{/agenda}" href="/agenda" class="text-link">Ver calendário <i data-lucide="arrow-right"></i></a>
+          </div>
+          <div class="mb-3 flex items-center justify-between">
+            <button class="calendar-arrow" aria-label="Mês anterior"><i data-lucide="chevron-left"></i></button>
+            <strong class="text-sm" th:text="${mesAtual} ?: 'Novembro de 2026'">Novembro de 2026</strong>
+            <button class="calendar-arrow" aria-label="Próximo mês"><i data-lucide="chevron-right"></i></button>
+          </div>
+          <div class="calendar-grid calendar-weekdays">
+            <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+          </div>
+          <div class="calendar-grid mt-2">
+            <button th:each="dia : ${diasCalendario}" class="calendar-date" th:classappend="${dia.hoje} ? ' selected' : (${dia.temEvento} ? ' has-event' : '')" th:text="${dia.numero}">1</button>
+            <div th:if="${diasCalendario == null}" class="contents">
+              <button class="calendar-date">1</button><button class="calendar-date">2</button><button class="calendar-date">3</button><button class="calendar-date">4</button><button class="calendar-date">5</button><button class="calendar-date">6</button><button class="calendar-date">7</button>
+              <button class="calendar-date">8</button><button class="calendar-date">9</button><button class="calendar-date">10</button><button class="calendar-date selected">11</button><button class="calendar-date">12</button><button class="calendar-date has-event">13</button><button class="calendar-date">14</button>
+              <button class="calendar-date">15</button><button class="calendar-date">16</button><button class="calendar-date">17</button><button class="calendar-date">18</button><button class="calendar-date">19</button><button class="calendar-date">20</button><button class="calendar-date">21</button>
+              <button class="calendar-date">22</button><button class="calendar-date">23</button><button class="calendar-date">24</button><button class="calendar-date">25</button><button class="calendar-date">26</button><button class="calendar-date">27</button><button class="calendar-date">28</button>
+              <button class="calendar-date">29</button><button class="calendar-date">30</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Tasks -->
+        <article class="panel p-5">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="section-title"><i data-lucide="list-checks"></i>Tarefas de hoje</h2>
+            <a th:href="@{/tarefas}" href="/tarefas" class="text-link">Ver todas <i data-lucide="arrow-right"></i></a>
+          </div>
+          <div class="divide-y divide-[#f0ebf4]">
+            <div th:each="tarefa : ${tarefasHoje}" class="task-row">
+              <form th:action="@{/tarefas/{id}/concluir(id=${tarefa.id})}" method="post" class="flex min-w-0 flex-1 items-center gap-3">
+                <button type="submit" class="task-check" th:classappend="${tarefa.concluida} ? ' checked' : ''" aria-label="Concluir tarefa">
+                  <i th:if="${tarefa.concluida}" data-lucide="check" class="h-3 w-3"></i>
+                </button>
+                <span class="truncate text-sm" th:classappend="${tarefa.concluida} ? ' line-through text-slate-400' : ''" th:text="${tarefa.titulo}">Estudar para a prova de Cálculo</span>
+              </form>
+              <span class="tag tag-study" th:text="${tarefa.categoria} ?: 'Estudos'">Estudos</span>
+              <button class="star-button" aria-label="Favoritar"><i data-lucide="star"></i></button>
+            </div>
+            <div th:if="${tarefasHoje == null}" class="contents">
+              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Estudar para a prova de Cálculo</span><span class="tag tag-study">Estudos</span><button class="star-button"><i data-lucide="star"></i></button></div>
+              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Finalizar projeto da faculdade</span><span class="tag tag-project">Projetos</span><button class="star-button"><i data-lucide="star"></i></button></div>
+              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Responder e-mails do trabalho</span><span class="tag tag-work">Trabalho</span><button class="star-button"><i data-lucide="star"></i></button></div>
+              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Beber água</span><span class="tag tag-habit">Hábitos</span><button class="star-button"><i data-lucide="star"></i></button></div>
+              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Fazer alongamento</span><span class="tag tag-habit">Hábitos</span><button class="star-button"><i data-lucide="star"></i></button></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Progress -->
+        <article class="panel p-5">
+          <div class="mb-5 flex items-center justify-between">
+            <h2 class="section-title"><i data-lucide="chart-pie"></i>Progresso geral</h2>
+            <a th:href="@{/relatorios}" href="/relatorios" class="text-link">Detalhes <i data-lucide="arrow-right"></i></a>
+          </div>
+          <div class="flex flex-col items-center gap-5 sm:flex-row 2xl:flex-col 2xl:gap-3">
+            <div class="progress-ring" th:style="'--progress:' + (${progressoGeral} ?: 68) + '%'">
+              <div><strong th:text="${progressoGeral} ?: 68">68</strong><span>%<br>da sua meta<br>semanal</span></div>
+            </div>
+            <div class="w-full space-y-3">
+              <div class="progress-legend"><span><i class="dot bg-violet-500"></i>Tarefas</span><strong th:text="${progressoTarefas} ?: '70%'">70%</strong></div>
+              <div class="progress-legend"><span><i class="dot bg-purple-300"></i>Estudos</span><strong th:text="${progressoEstudos} ?: '80%'">80%</strong></div>
+              <div class="progress-legend"><span><i class="dot bg-emerald-400"></i>Hábitos</span><strong th:text="${progressoHabitos} ?: '60%'">60%</strong></div>
+              <div class="progress-legend"><span><i class="dot bg-pink-400"></i>Projetos</span><strong th:text="${progressoProjetos} ?: '75%'">75%</strong></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- Bottom grid -->
+      <section class="grid grid-cols-1 gap-4 xl:grid-cols-[1.1fr_1.1fr_.9fr]">
+        <article class="panel p-5">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="section-title"><i data-lucide="folder"></i>Projetos em andamento</h2>
+            <a th:href="@{/projetos}" href="/projetos" class="text-link">Ver todos <i data-lucide="arrow-right"></i></a>
+          </div>
+          <div th:each="projeto : ${projetosAtivos}" class="project-row">
+            <div class="project-icon"><i data-lucide="panels-top-left"></i></div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-2"><p class="truncate text-sm font-semibold" th:text="${projeto.nome}">TCC – Sistema Automotivo</p><span class="tag tag-project">Em andamento</span></div>
+              <p class="mt-1 truncate text-xs text-slate-500" th:text="${projeto.descricao}">Desenvolvimento de uma plataforma de planejamento</p>
+              <div class="mt-2 flex items-center gap-2"><div class="progress-track"><span th:style="'width:' + ${projeto.progresso} + '%' " style="width:70%"></span></div><small th:text="${projeto.progresso} + '%'">70%</small></div>
+            </div>
+          </div>
+          <div th:if="${projetosAtivos == null}" class="contents">
+            <div class="project-row"><div class="project-icon"><i data-lucide="panels-top-left"></i></div><div class="min-w-0 flex-1"><p class="text-sm font-semibold">TCC – Sistema Automotivo</p><p class="mt-1 text-xs text-slate-500">Desenvolvimento de uma plataforma de planejamento</p><div class="mt-2 flex items-center gap-2"><div class="progress-track"><span style="width:70%"></span></div><small>70%</small></div></div></div>
+            <div class="project-row"><div class="project-icon pink"><i data-lucide="sprout"></i></div><div class="min-w-0 flex-1"><p class="text-sm font-semibold">Projeto pessoal: Rewind</p><p class="mt-1 text-xs text-slate-500">Organização e desenvolvimento criativo</p><div class="mt-2 flex items-center gap-2"><div class="progress-track"><span style="width:45%"></span></div><small>45%</small></div></div></div>
+          </div>
+        </article>
+
+        <article class="panel p-5">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="section-title"><i data-lucide="book-open"></i>Estudos</h2>
+            <a th:href="@{/estudos}" href="/estudos" class="text-link">Ver matérias <i data-lucide="arrow-right"></i></a>
+          </div>
+          <div th:each="materia : ${materias}" class="study-row">
+            <div class="study-cover"><i data-lucide="book-marked"></i></div>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-semibold" th:text="${materia.nome}">Cálculo I</p>
+              <p class="mt-1 truncate text-xs text-slate-500" th:text="${materia.conteudoAtual}">Capítulo 6: Integrais</p>
+              <div class="mt-2 flex items-center gap-2"><div class="progress-track"><span th:style="'width:' + ${materia.progresso} + '%' " style="width:60%"></span></div><small th:text="${materia.progresso} + '%'">60%</small></div>
+            </div>
+          </div>
+          <div th:if="${materias == null}" class="contents">
+            <div class="study-row"><div class="study-cover"><i data-lucide="book-marked"></i></div><div class="min-w-0 flex-1"><p class="text-sm font-semibold">Cálculo I</p><p class="mt-1 text-xs text-slate-500">Capítulo 6: Integrais</p><div class="mt-2 flex items-center gap-2"><div class="progress-track"><span style="width:60%"></span></div><small>60%</small></div></div></div>
+            <div class="study-row"><div class="study-cover pink"><i data-lucide="database"></i></div><div class="min-w-0 flex-1"><p class="text-sm font-semibold">Banco de Dados</p><p class="mt-1 text-xs text-slate-500">Normalização e modelagem</p><div class="mt-2 flex items-center gap-2"><div class="progress-track"><span style="width:30%"></span></div><small>30%</small></div></div></div>
+          </div>
+        </article>
+
+        <article class="quote-card flex min-h-[220px] flex-col justify-between overflow-hidden rounded-2xl p-6 text-white">
+          <i data-lucide="sparkles" class="h-7 w-7 text-purple-200"></i>
+          <div class="relative z-10 max-w-xs self-end text-right">
+            <p class="font-serif text-2xl leading-snug">“Você já fez muito hoje.”</p>
+            <p class="mt-3 text-sm text-purple-100/85">Organização também é respeitar o seu ritmo. ♡</p>
+          </div>
+          <i data-lucide="moon-star" class="absolute bottom-5 left-5 h-12 w-12 text-purple-200/50"></i>
+        </article>
+      </section>
+
+      <footer class="pb-2 pt-1 text-center text-xs text-slate-400">IntelliPlan · Planeje com intenção, avance no seu ritmo.</footer>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+</body>
+</html>
