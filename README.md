@@ -143,7 +143,7 @@ O IntelliPlan encontra-se em fase de construção da estrutura principal e imple
 | Repositories | Concluídos |
 | DTOs e validações | Concluídos |
 | Exceções customizadas | Concluídas |
-| Camada de Services | Em desenvolvimento |
+| Camada de Services | Concluída |
 | Autenticação e autorização | Pendente |
 | Controllers e API REST | Pendente |
 | Documentação funcional da API | Pendente |
