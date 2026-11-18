@@ -9,12 +9,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "registros_habito")
+@Table(
+        name = "registros_habito",
+        uniqueConstraints = @UniqueConstraint(name = "uk_registro_habito_data", columnNames = {"habito_id", "data_registro"})
+)
 public class RegistroHabito {
 
     @Id
