@@ -48,13 +48,16 @@ As funcionalidades planejadas para a aplicação estão organizadas nos seguinte
 - **Spring Boot 4.1.2** — framework principal da aplicação.
 - **Spring Data JPA** — abstração para persistência e acesso aos dados.
 - **Hibernate** — implementação de referência para o mapeamento objeto-relacional utilizado pelo JPA.
-- **Spring Security** — infraestrutura de autenticação e autorização.
+- **Spring Security** — infraestrutura de autenticação e autorização (atualmente com configuração provisória para ambiente de desenvolvimento).
 
 ### Frontend
 
 - **HTML5** — estrutura das páginas.
-- **CSS3** — estilização da interface.
-- **Thymeleaf** — mecanismo de templates integrado ao Spring.
+- **CSS3** — estilização personalizada da interface.
+- **Tailwind CSS** — framework utilitário para estilização e responsividade (via CDN).
+- **Thymeleaf** — mecanismo de templates integrado ao Spring Boot para renderização no servidor.
+- **JavaScript (Vanilla)** — manipulação de interações e comportamento dinâmico no cliente.
+- **Lucide Icons** — biblioteca de ícones vetoriais integrada aos componentes da interface.
 
 ### Banco de dados
 
@@ -87,13 +90,25 @@ Essa abordagem busca facilitar a manutenção, a evolução e a compreensão do 
 
 | Pacote | Responsabilidade |
 |---|---|
-| `entity` | Entidades e mapeamentos de persistência. |
-| `repository` | Interfaces de acesso e consulta aos dados. |
-| `dto` | Objetos utilizados na transferência de dados. |
+| `entity` | Entidades e mapeamentos de persistência JPA. |
+| `repository` | Interfaces de acesso e consulta aos dados com Spring Data. |
+| `dto` | Objetos (records) utilizados na transferência de dados entre camadas. |
 | `service` | Regras de negócio e coordenação das operações. |
-| `controller` | Recebimento e tratamento das requisições. |
-| `common` | Componentes compartilhados, como exceções. |
+| `controller` | Recebimento, tratamento e roteamento de requisições web e REST. |
+| `config` | Classes de configuração da aplicação (ex.: segurança com Spring Security). |
+| `common` | Componentes compartilhados, como classes de exceção e manipuladores. |
 | `integracao` | Comunicação com serviços e APIs externas. |
+
+### Estrutura de arquivos do frontend
+
+Os recursos de interface e templates da aplicação estão organizados no diretório `src/main/resources`:
+
+| Diretório | Descrição |
+|---|---|
+| `templates/` | Páginas e fragmentos HTML renderizados pelo Thymeleaf, modularizados por contexto (ex.: `dashboard/`, `fragments/`). |
+| `static/css/` | Folhas de estilo divididas entre estilos base (`base/customstyles.css`) e estilos específicos de página (`pages/dashboard.css`). |
+| `static/js/` | Scripts de interatividade da interface (`pages/dashboard.js`, `pages/interaction-dashboard.js`). |
+| `static/images/` | Imagens e recursos gráficos estáticos utilizados nos componentes visuais. |
 
 ### Princípios arquiteturais
 
@@ -102,8 +117,17 @@ Essa abordagem busca facilitar a manutenção, a evolução e a compreensão do 
 - Encapsulamento das regras de negócio.
 - Validação dos dados de entrada.
 - Persistência estruturada com JPA.
-- Injeção de dependências.
+- Injeção de dependências via construtor.
 - Organização orientada à manutenção e evolução do sistema.
+
+### Configuração de segurança (provisória de desenvolvimento)
+
+O projeto conta com a classe `SecurityConfig`, responsável por disponibilizar o bean de criptografia `PasswordEncoder` utilizando o algoritmo BCrypt.
+
+Durante a fase atual de desenvolvimento local e integração visual:
+- **Rotas liberadas:** Todas as rotas estão temporariamente acessíveis (`permitAll()`) para permitir a navegação livre e facilitar a construção da interface.
+- **CSRF desabilitado:** A proteção contra CSRF está provisoriamente inativa para simplificar as requisições em ambiente de desenvolvimento.
+- **Autenticação e autorização definitivas:** Mecanismos de login, controle de sessão/JWT, proteção CSRF e isolamento formal por credencial autenticada continuam pendentes e serão implementados em etapa dedicada.
 
 ### Empacotamento
 
@@ -134,24 +158,25 @@ Os relacionamentos entre essas entidades são definidos por meio do mapeamento J
 
 <badge color="info">Em desenvolvimento</badge>
 
-O IntelliPlan encontra-se em fase de construção da estrutura principal e implementação das regras de negócio.
+O IntelliPlan encontra-se em fase de integração entre a camada de negócio e a interface do usuário.
 
-| Etapa | Situação |
-|---|---|
-| Estrutura inicial do projeto | Concluída |
-| Modelagem das entidades JPA | Concluída |
-| Repositories | Concluídos |
-| DTOs e validações | Concluídos |
-| Exceções customizadas | Concluídas |
-| Camada de Services | Concluída |
-| Autenticação e autorização | Pendente |
-| Controllers e API REST | Pendente |
-| Documentação funcional da API | Pendente |
-| Integração com serviços externos | Pendente |
-| Interface web | Pendente |
-| Validação e implantação final | Pendente |
+| Etapa | Situação | Observações |
+|---|---|---|
+| Estrutura inicial do projeto | Concluída | Configuração base com Maven, Spring Boot e empacotamento WAR. |
+| Modelagem das entidades JPA | Concluída | 8 entidades mapeadas com Jakarta Persistence. |
+| Repositories | Concluídos | Interfaces Spring Data JPA com métodos derivados específicos. |
+| DTOs e validações | Concluídos | Records para transporte de dados e Bean Validation. |
+| Exceções customizadas | Concluídas | Exceções de domínio para recursos não encontrados, regras e duplicidades. |
+| Camada de Services | Concluída | 8 services implementados com regras de integridade, isolamento e transações. |
+| Configuração de segurança | Em desenvolvimento | Bean `PasswordEncoder` (BCrypt) configurado; rotas liberadas e CSRF desabilitado provisoriamente para desenvolvimento. |
+| Controllers e rotas | Em desenvolvimento | `DashboardController` implementado com mapeamento inicial da rota `/`. |
+| Interface web (Dashboard) | Em desenvolvimento | Estrutura visual inicial com Thymeleaf, Tailwind CSS, Lucide Icons e scripts JS interativos (dados de backend ainda não vinculados). |
+| Autenticação e autorização | Pendente | Fluxo definitivo de login, cadastro, controle de acesso e proteção CSRF. |
+| API REST e documentação | Pendente | Endpoints RESTful dos módulos e documentação com OpenAPI/Swagger. |
+| Integração com serviços externos | Pendente | Comunicação com APIs externas de apoio. |
+| Validação e implantação final | Pendente | Testes de integração, segurança e deploy de produção. |
 
-*O status será atualizado conforme as etapas forem concluídas e verificadas.*
+> **Nota sobre o Dashboard:** A página inicial (`/`) já está acessível através do `DashboardController`, contando com layout responsivo, ícones Lucide e interações em JavaScript (como alternância visual de favoritos, atalhos de busca e marcação demonstrativa de checkboxes). Contudo, os cards e seções ainda exibem dados demonstrativos de template, pois a integração direta com os Services (tarefas, projetos, estudos, hábitos e agenda) e as rotas dos demais módulos continuam em fase de desenvolvimento.
 
 ---
 
