@@ -16,7 +16,18 @@ body { font-family: "DM Sans", sans-serif; }
 .nav-link:hover { background: #ffffff12; color: white; }
 .nav-link.active { color: white; background: linear-gradient(110deg, #8151dc, #6438bf); box-shadow: 0 7px 18px #10091f30; }
 
-.sidebar-note { background: linear-gradient(145deg, #5b3e80, #39274f); border: 1px solid #ffffff16; }
+
+.sidebar-note {
+  background: url('/images/card1.jpg') no-repeat center center;
+  background-size: cover;
+  min-height: 200px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(26, 10, 46, 0.4);
+}
+.sidebar-note > * {
+  display: none; 
+}
 
 .avatar {
   display: grid; place-items: center; width: 38px; height: 38px; flex-shrink: 0;
@@ -36,7 +47,6 @@ body { font-family: "DM Sans", sans-serif; }
 
 .primary-button { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 11px 16px; color: white; background: linear-gradient(110deg, #8654df, #673ac3); font-size: 13px; font-weight: 700; box-shadow: 0 6px 16px #7043c52b; transition: .2s; }
 .primary-button:hover { transform: translateY(-1px); box-shadow: 0 9px 20px #7043c540; }
-
 
 .hero {
   position: relative;
@@ -62,6 +72,7 @@ body { font-family: "DM Sans", sans-serif; }
 .hero-orbit {
   display: none;
 }
+
 
 .panel { position: relative; min-width: 0; border: 1px solid #eee8f2; border-radius: 19px; background: #fff; box-shadow: 0 5px 22px #39234d08; }
 .section-title { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; color: #30243f; }
@@ -136,7 +147,18 @@ body { font-family: "DM Sans", sans-serif; }
 .progress-track span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #a47be8, #7545d6); }
 .project-row small, .study-row small { color: #685b76; font-size: 10px; }
 
-.quote-card { position: relative; background: radial-gradient(circle at 90% 10%, #9466d5 0, transparent 28%), linear-gradient(145deg, #67418e, #30213f 78%); }
+.quote-card {
+  position: relative;
+  background: url('/images/card2.jpg') no-repeat center center;
+  background-size: cover;
+  min-height: 220px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(47, 31, 69, 0.12);
+}
+.quote-card > * {
+  display: none; 
+}
 
 @media (max-width: 1023px) {
   .sidebar { min-height: auto; }
