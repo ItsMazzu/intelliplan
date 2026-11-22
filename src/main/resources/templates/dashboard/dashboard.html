@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}">
-<link rel="stylesheet" th:href="@{/css/pages/dashboard.css}">
   <title>IntelliPlan | Dashboard</title>
 
-  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -33,11 +30,9 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
 </head>
-<script th:src="@{/js/pages/interaction-dashboard.js}" defer></script>
 <body class="min-h-screen bg-mist text-ink">
 <div class="min-h-screen lg:flex">
 
-  <!-- Sidebar -->
   <aside class="sidebar flex w-full flex-col text-white lg:fixed lg:inset-y-0 lg:w-[216px]">
     <a href="#" class="flex items-center gap-3 px-6 py-7">
       <span class="brand-mark"><i data-lucide="sparkle" class="h-7 w-7"></i></span>
@@ -55,13 +50,9 @@
 
     <div class="mx-5 my-4 hidden border-t border-white/15 lg:block"></div>
 
-    <div class="sidebar-note mx-4 mb-5 mt-auto hidden rounded-2xl p-5 lg:block">
-      <i data-lucide="sparkles" class="mb-3 h-6 w-6 text-purple-200"></i>
-      <p class="font-bold">Você consegue!</p>
-      <p class="mt-1 text-sm leading-relaxed text-purple-100/80">Pequenos passos também constroem grandes conquistas.</p>
-      <div class="mt-4 flex justify-end"><i data-lucide="moon-star" class="h-8 w-8 text-purple-200/80"></i></div>
-    </div>
+    <div class="sidebar-note mx-4 mb-5 mt-auto hidden rounded-2xl p-5 lg:block" aria-label="Card motivacional"></div>
 
+  
     <div class="mt-auto flex items-center justify-between border-t border-white/10 px-5 py-5">
       <div class="flex min-w-0 items-center gap-3">
         <div class="avatar">LC</div>
@@ -74,9 +65,9 @@
     </div>
   </aside>
 
-  <!-- Main -->
+
   <main class="min-w-0 flex-1 lg:ml-[216px]">
-    <!-- Topbar -->
+   
     <header class="topbar sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 px-5 py-4 md:px-8">
       <div class="relative w-full max-w-md">
         <i data-lucide="search" class="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-purple-400"></i>
@@ -96,7 +87,6 @@
 
     <div class="mx-auto max-w-[1600px] space-y-6 px-5 pb-10 pt-6 md:px-8">
       
-      <!-- Hero Banner com Gatinho PNG -->
       <section class="hero relative overflow-hidden rounded-[28px] px-7 py-8 md:px-10 md:py-9">
         <div class="relative z-10 max-w-xl">
           <p class="mb-2 text-sm font-semibold uppercase tracking-[.18em] text-purple-200">Seu espaço de organização</p>
@@ -108,7 +98,7 @@
         </div>
       </section>
 
-      <!-- Summary / quick actions / habits -->
+    
       <section class="grid grid-cols-1 gap-4 xl:grid-cols-[1.25fr_1.1fr_.9fr]">
         <article class="panel p-5">
           <div class="mb-5 flex items-center justify-between">
@@ -154,9 +144,8 @@
         </article>
       </section>
 
-      <!-- Middle grid -->
       <section class="grid grid-cols-1 gap-4 2xl:grid-cols-[1.05fr_1.2fr_.95fr]">
-        <!-- Calendar -->
+       
         <article class="panel p-5">
           <div class="mb-4 flex items-center justify-between">
             <h2 class="section-title"><i data-lucide="calendar-days"></i>Agenda</h2>
@@ -182,7 +171,6 @@
           </div>
         </article>
 
-        <!-- Tasks -->
         <article class="panel p-5">
           <div class="mb-4 flex items-center justify-between">
             <h2 class="section-title"><i data-lucide="list-checks"></i>Tarefas de hoje</h2>
@@ -208,8 +196,7 @@
             </div>
           </div>
         </article>
-
-        <!-- Progress -->
+        
         <article class="panel p-5">
           <div class="mb-5 flex items-center justify-between">
             <h2 class="section-title"><i data-lucide="chart-pie"></i>Progresso geral</h2>
@@ -229,8 +216,8 @@
         </article>
       </section>
 
-      <!-- Bottom grid -->
       <section class="grid grid-cols-1 gap-4 xl:grid-cols-[1.1fr_1.1fr_.9fr]">
+        <!-- Projetos -->
         <article class="panel p-5">
           <div class="mb-4 flex items-center justify-between">
             <h2 class="section-title"><i data-lucide="folder"></i>Projetos em andamento</h2>
@@ -250,6 +237,7 @@
           </div>
         </article>
 
+    
         <article class="panel p-5">
           <div class="mb-4 flex items-center justify-between">
             <h2 class="section-title"><i data-lucide="book-open"></i>Estudos</h2>
@@ -269,14 +257,7 @@
           </div>
         </article>
 
-        <article class="quote-card flex min-h-[220px] flex-col justify-between overflow-hidden rounded-2xl p-6 text-white">
-          <i data-lucide="sparkles" class="h-7 w-7 text-purple-200"></i>
-          <div class="relative z-10 max-w-xs self-end text-right">
-            <p class="font-serif text-2xl leading-snug">“Você já fez muito hoje.”</p>
-            <p class="mt-3 text-sm text-purple-100/85">Organização também é respeitar o seu ritmo. ♡</p>
-          </div>
-          <i data-lucide="moon-star" class="absolute bottom-5 left-5 h-12 w-12 text-purple-200/50"></i>
-        </article>
+        <article class="quote-card flex min-h-[220px] overflow-hidden rounded-2xl" aria-label="Card motivacional"></article>
       </section>
 
       <footer class="pb-2 pt-1 text-center text-xs text-slate-400">IntelliPlan · Planeje com intenção, avance no seu ritmo.</footer>
@@ -285,6 +266,6 @@
 </div>
 
 <script src="https://unpkg.com/lucide@latest"></script>
-<script th:src="@{/js/pages/dashboard.js}"></script>
+<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
 </body>
 </html>
