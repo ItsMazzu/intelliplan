@@ -10,10 +10,13 @@ import com.planner.tarefa.entity.Tarefa;
 import com.planner.tarefa.repository.TarefaRepository;
 import com.planner.usuario.entity.Usuario;
 import com.planner.usuario.service.UsuarioService;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -91,6 +94,42 @@ public class TarefaService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<TarefaResponseDTO> listarComFiltros(Long usuarioId,
+                                                    Tarefa.Status status,
+                                                    Long projetoId,
+                                                    LocalDate inicio,
+                                                    LocalDate fim) {
+        if (inicio != null && fim != null && fim.isBefore(inicio)) {
+            throw new BusinessRuleException("A data final do período não pode ser anterior à data inicial.");
+        }
+        if (projetoId != null) {
+            projetoService.buscarProjetoDoUsuario(usuarioId, projetoId);
+        }
+
+        Specification<Tarefa> specification = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(criteriaBuilder.equal(root.get("usuario").get("id"), usuarioId));
+            if (status != null) {
+                predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            }
+            if (projetoId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("projeto").get("id"), projetoId));
+            }
+            if (inicio != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.<LocalDate>get("dataVencimento"), inicio));
+            }
+            if (fim != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.<LocalDate>get("dataVencimento"), fim));
+            }
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
+        };
+
+        return tarefaRepository.findAll(specification).stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
+
     @Transactional
     public TarefaResponseDTO atualizar(Long usuarioId, Long id, TarefaRequestDTO dto) {
         Tarefa tarefa = buscarTarefaDoUsuario(usuarioId, id);
@@ -117,6 +156,17 @@ public class TarefaService {
     public void excluir(Long usuarioId, Long id) {
         Tarefa tarefa = buscarTarefaDoUsuario(usuarioId, id);
         tarefaRepository.delete(tarefa);
+    }
+
+    @Transactional
+    public TarefaResponseDTO alternarConclusao(Long usuarioId, Long id) {
+        Tarefa tarefa = buscarTarefaDoUsuario(usuarioId, id);
+        if (tarefa.getStatus() == Tarefa.Status.CONCLUIDA) {
+            tarefa.setStatus(Tarefa.Status.PENDENTE);
+        } else {
+            tarefa.setStatus(Tarefa.Status.CONCLUIDA);
+        }
+        return toResponseDTO(tarefaRepository.save(tarefa));
     }
 
     private Tarefa buscarTarefaDoUsuario(Long usuarioId, Long id) {
