@@ -10,10 +10,13 @@ import com.planner.tarefa.entity.Tarefa;
 import com.planner.tarefa.repository.TarefaRepository;
 import com.planner.usuario.entity.Usuario;
 import com.planner.usuario.service.UsuarioService;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -54,6 +57,38 @@ public class TarefaService {
     @Transactional(readOnly = true)
     public TarefaResponseDTO buscarPorId(Long usuarioId, Long id) {
         return toResponseDTO(buscarTarefaDoUsuario(usuarioId, id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<TarefaResponseDTO> listar(Long usuarioId, Tarefa.Status status, Long projetoId, LocalDate inicio, LocalDate fim) {
+        if (projetoId != null) {
+            projetoService.buscarProjetoDoUsuario(usuarioId, projetoId);
+        }
+        if ((inicio != null && fim == null) || (inicio == null && fim != null)) {
+            throw new BusinessRuleException("As datas inicial e final do período são obrigatórias quando o filtro por período for utilizado.");
+        }
+        if (inicio != null && fim != null && fim.isBefore(inicio)) {
+            throw new BusinessRuleException("A data final do período não pode ser anterior à data inicial.");
+        }
+
+        Specification<Tarefa> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("usuario").get("id"), usuarioId));
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+            if (projetoId != null) {
+                predicates.add(cb.equal(root.get("projeto").get("id"), projetoId));
+            }
+            if (inicio != null && fim != null) {
+                predicates.add(cb.between(root.get("dataVencimento"), inicio, fim));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return tarefaRepository.findAll(spec).stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)

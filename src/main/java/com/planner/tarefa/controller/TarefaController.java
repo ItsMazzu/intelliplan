@@ -60,10 +60,11 @@ public class TarefaController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar tarefas", description = "Lista as tarefas do usuário com filtros opcionais por status, projeto ou período de vencimento")
+    @Operation(summary = "Listar tarefas", description = "Lista as tarefas do usuário com filtros opcionais combináveis por status, projeto ou período de vencimento")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Tarefas listadas com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Parâmetros de período inválidos")
+            @ApiResponse(responseCode = "400", description = "Parâmetros de período inválidos"),
+            @ApiResponse(responseCode = "404", description = "Projeto informado não encontrado")
     })
     public ResponseEntity<List<TarefaResponseDTO>> listar(
             @Parameter(description = "Filtro opcional por status") @RequestParam(required = false) Tarefa.Status status,
@@ -73,17 +74,7 @@ public class TarefaController {
             @Parameter(description = "Data final para busca por vencimento")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
         Long usuarioId = usuarioContextService.obterUsuarioIdAtual();
-
-        if (status != null) {
-            return ResponseEntity.ok(tarefaService.listarPorStatus(usuarioId, status));
-        }
-        if (projetoId != null) {
-            return ResponseEntity.ok(tarefaService.listarPorProjeto(usuarioId, projetoId));
-        }
-        if (inicio != null || fim != null) {
-            return ResponseEntity.ok(tarefaService.listarPorPeriodo(usuarioId, inicio, fim));
-        }
-        return ResponseEntity.ok(tarefaService.listarPorUsuario(usuarioId));
+        return ResponseEntity.ok(tarefaService.listar(usuarioId, status, projetoId, inicio, fim));
     }
 
     @GetMapping("/{id}")

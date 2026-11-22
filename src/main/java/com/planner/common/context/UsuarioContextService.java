@@ -11,32 +11,47 @@ import java.util.Optional;
 @Component
 public class UsuarioContextService {
 
-    private final Long devUsuarioId;
+    private final String devUsuarioIdRaw;
     private final UsuarioRepository usuarioRepository;
 
     public UsuarioContextService(
-            @Value("${app.dev.usuario-id:#{null}}") Long devUsuarioId,
+            @Value("${app.dev.usuario-id:}") String devUsuarioIdRaw,
             UsuarioRepository usuarioRepository) {
-        this.devUsuarioId = devUsuarioId;
+        this.devUsuarioIdRaw = devUsuarioIdRaw;
         this.usuarioRepository = usuarioRepository;
     }
 
     public Long obterUsuarioIdAtual() {
-        if (devUsuarioId == null) {
+        if (devUsuarioIdRaw == null || devUsuarioIdRaw.isBlank()) {
             throw new BusinessRuleException(
                     "Identificador de usuário não configurado em 'app.dev.usuario-id'. Configure um ID válido em application.properties.");
         }
-        if (!usuarioRepository.existsById(devUsuarioId)) {
-            throw new ResourceNotFoundException(
-                    "Usuário configurado em 'app.dev.usuario-id' (" + devUsuarioId + ") não encontrado no banco de dados.");
+        Long usuarioId;
+        try {
+            usuarioId = Long.parseLong(devUsuarioIdRaw.trim());
+        } catch (NumberFormatException ex) {
+            throw new BusinessRuleException(
+                    "Identificador de usuário configurado em 'app.dev.usuario-id' é inválido: '" + devUsuarioIdRaw.trim() + "'. Deve ser um número inteiro.");
         }
-        return devUsuarioId;
+        if (!usuarioRepository.existsById(usuarioId)) {
+            throw new ResourceNotFoundException(
+                    "Usuário configurado em 'app.dev.usuario-id' (" + usuarioId + ") não encontrado no banco de dados.");
+        }
+        return usuarioId;
     }
 
     public Optional<Long> obterUsuarioIdOpcional() {
-        if (devUsuarioId == null || !usuarioRepository.existsById(devUsuarioId)) {
+        if (devUsuarioIdRaw == null || devUsuarioIdRaw.isBlank()) {
             return Optional.empty();
         }
-        return Optional.of(devUsuarioId);
+        try {
+            Long usuarioId = Long.parseLong(devUsuarioIdRaw.trim());
+            if (!usuarioRepository.existsById(usuarioId)) {
+                return Optional.empty();
+            }
+            return Optional.of(usuarioId);
+        } catch (NumberFormatException ex) {
+            return Optional.empty();
+        }
     }
 }

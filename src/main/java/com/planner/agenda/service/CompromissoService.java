@@ -60,7 +60,7 @@ public class CompromissoService {
         if (fim.isBefore(inicio)) {
             throw new BusinessRuleException("A data e hora final do período não pode ser anterior à data e hora inicial.");
         }
-        return compromissoRepository.findByUsuarioIdAndDataHoraInicioBetween(usuarioId, inicio, fim).stream()
+        return compromissoRepository.findCompromissosNoPeriodo(usuarioId, inicio, fim).stream()
                 .map(this::toResponseDTO)
                 .toList();
     }

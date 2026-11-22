@@ -10,6 +10,8 @@ public interface RegistroHabitoRepository extends JpaRepository<RegistroHabito, 
 
     List<RegistroHabito> findByHabitoId(Long habitoId);
 
+    List<RegistroHabito> findByHabitoIdInAndDataRegistroBetween(List<Long> habitoIds, LocalDate inicio, LocalDate fim);
+
     List<RegistroHabito> findByHabitoIdAndDataRegistroBetween(Long habitoId, LocalDate inicio, LocalDate fim);
 
     boolean existsByHabitoIdAndDataRegistro(Long habitoId, LocalDate dataRegistro);

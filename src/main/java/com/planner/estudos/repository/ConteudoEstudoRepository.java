@@ -9,5 +9,7 @@ public interface ConteudoEstudoRepository extends JpaRepository<ConteudoEstudo, 
 
     List<ConteudoEstudo> findByMateriaId(Long materiaId);
 
+    List<ConteudoEstudo> findByMateriaIdIn(List<Long> materiaIds);
+
     List<ConteudoEstudo> findByMateriaIdAndStatus(Long materiaId, ConteudoEstudo.Status status);
 }
