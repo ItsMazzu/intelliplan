@@ -47,6 +47,8 @@ A aplicação está organizada nos seguintes módulos:
 ### Integrações Externas
 - **BrasilAPI** — consulta resiliente de feriados nacionais via `RestClient` do Spring com timeouts de conexão (3s) e leitura (5s), tratando falhas de rede defensivamente.
 
+As respostas não vazias da BrasilAPI são mantidas em cache em memória por ano. Resultados vazios e falhas não são armazenados, permitindo novas tentativas em chamadas posteriores. O cache não possui persistência nem compartilhamento entre instâncias e é perdido quando a aplicação reinicia.
+
 ### Frontend
 - **Thymeleaf** — engine de templates server-side integrado ao Spring Boot.
 - **Tailwind CSS** — estilização e layout responsivo via CDN.

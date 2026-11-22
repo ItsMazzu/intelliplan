@@ -11,32 +11,46 @@ import java.util.Optional;
 @Component
 public class UsuarioContextService {
 
-    private final Long devUsuarioId;
+    private final String devUsuarioIdConfigurado;
     private final UsuarioRepository usuarioRepository;
 
     public UsuarioContextService(
-            @Value("${app.dev.usuario-id:#{null}}") Long devUsuarioId,
+            @Value("${app.dev.usuario-id:}") String devUsuarioIdConfigurado,
             UsuarioRepository usuarioRepository) {
-        this.devUsuarioId = devUsuarioId;
+        this.devUsuarioIdConfigurado = devUsuarioIdConfigurado;
         this.usuarioRepository = usuarioRepository;
     }
 
     public Long obterUsuarioIdAtual() {
-        if (devUsuarioId == null) {
+        Optional<Long> devUsuarioId = obterDevUsuarioIdConfigurado();
+        if (devUsuarioId.isEmpty()) {
             throw new BusinessRuleException(
                     "Identificador de usuário não configurado em 'app.dev.usuario-id'. Configure um ID válido em application.properties.");
         }
-        if (!usuarioRepository.existsById(devUsuarioId)) {
+        if (!usuarioRepository.existsById(devUsuarioId.get())) {
             throw new ResourceNotFoundException(
-                    "Usuário configurado em 'app.dev.usuario-id' (" + devUsuarioId + ") não encontrado no banco de dados.");
+                    "Usuário configurado em 'app.dev.usuario-id' (" + devUsuarioId.get() + ") não encontrado no banco de dados.");
+        }
+        return devUsuarioId.get();
+    }
+
+    public Optional<Long> obterUsuarioIdOpcional() {
+        Optional<Long> devUsuarioId = obterDevUsuarioIdConfigurado();
+        if (devUsuarioId.isEmpty() || !usuarioRepository.existsById(devUsuarioId.get())) {
+            return Optional.empty();
         }
         return devUsuarioId;
     }
 
-    public Optional<Long> obterUsuarioIdOpcional() {
-        if (devUsuarioId == null || !usuarioRepository.existsById(devUsuarioId)) {
+    private Optional<Long> obterDevUsuarioIdConfigurado() {
+        if (devUsuarioIdConfigurado == null || devUsuarioIdConfigurado.isBlank()) {
             return Optional.empty();
         }
-        return Optional.of(devUsuarioId);
+        try {
+            return Optional.of(Long.parseLong(devUsuarioIdConfigurado.trim()));
+        } catch (NumberFormatException ex) {
+            throw new BusinessRuleException(
+                    "Identificador de usuário inválido em 'app.dev.usuario-id'. Configure um valor numérico.");
+        }
     }
 }

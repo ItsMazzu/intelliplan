@@ -15,6 +15,7 @@ import com.planner.estudos.repository.ConteudoEstudoRepository;
 import com.planner.estudos.repository.MateriaRepository;
 import com.planner.habitos.entity.Habito;
 import com.planner.habitos.repository.HabitoRepository;
+import com.planner.habitos.repository.RegistroHabitoDashboardProjection;
 import com.planner.habitos.repository.RegistroHabitoRepository;
 import com.planner.integracao.feriados.dto.FeriadoDTO;
 import com.planner.integracao.feriados.service.FeriadoService;
@@ -33,8 +34,10 @@ import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -103,24 +106,56 @@ public class DashboardService {
         long totalProjetos = projetos.size();
         long totalHabitos = habitos.size();
 
+        List<Habito> habitosAtivos = habitos.stream().filter(Habito::isAtivo).toList();
+        List<Long> habitoIdsAtivos = habitosAtivos.stream().map(Habito::getId).toList();
+        List<RegistroHabitoDashboardProjection> registrosHabitos = habitoIdsAtivos.isEmpty()
+                ? Collections.emptyList()
+                : registroHabitoRepository.findDashboardRegistros(
+                        habitoIdsAtivos,
+                        hoje.minusDays(6),
+                        hoje
+                );
+        Map<LocalDate, Set<Long>> habitosConcluidosPorData = registrosHabitos.stream()
+                .collect(Collectors.groupingBy(
+                        RegistroHabitoDashboardProjection::dataRegistro,
+                        Collectors.mapping(RegistroHabitoDashboardProjection::habitoId, Collectors.toSet())
+                ));
+
         List<DiaHabitoDTO> diasHabitos = new ArrayList<>();
         for (int i = 6; i >= 0; i--) {
             LocalDate data = hoje.minusDays(i);
             String inicial = obterInicialDiaSemana(data);
-            boolean concluido = habitos.stream()
-                    .filter(Habito::isAtivo)
-                    .anyMatch(h -> registroHabitoRepository.existsByHabitoIdAndDataRegistro(h.getId(), data));
+            Set<Long> habitosConcluidos = habitosConcluidosPorData.getOrDefault(data, Collections.emptySet());
+            boolean concluido = habitoIdsAtivos.stream().anyMatch(habitosConcluidos::contains);
             diasHabitos.add(new DiaHabitoDTO(concluido, inicial));
         }
 
         String mesAtual = formatarMesAno(hoje);
 
-        LocalDateTime inicioMes = YearMonth.from(hoje).atDay(1).atStartOfDay();
-        LocalDateTime fimMes = YearMonth.from(hoje).atEndOfMonth().atTime(23, 59, 59);
+        YearMonth anoMes = YearMonth.from(hoje);
+        LocalDate primeiroDiaMes = anoMes.atDay(1);
+        LocalDate ultimoDiaMes = anoMes.atEndOfMonth();
+        LocalDateTime inicioMes = primeiroDiaMes.atStartOfDay();
+        LocalDateTime fimMes = ultimoDiaMes.atTime(23, 59, 59);
         List<Compromisso> compromissosMes = compromissoRepository.findByUsuarioIdAndDataHoraInicioBetween(usuarioId, inicioMes, fimMes);
-        Set<LocalDate> datasComCompromisso = compromissosMes.stream()
-                .map(c -> c.getDataHoraInicio().toLocalDate())
-                .collect(Collectors.toSet());
+        Set<LocalDate> datasComCompromisso = new HashSet<>();
+        for (Compromisso compromisso : compromissosMes) {
+            LocalDate inicioCompromisso = compromisso.getDataHoraInicio().toLocalDate();
+            LocalDate fimCompromisso = compromisso.getDataHoraFim() != null
+                    ? compromisso.getDataHoraFim().toLocalDate()
+                    : ultimoDiaMes;
+            LocalDate primeiroDiaComCompromisso = inicioCompromisso.isBefore(primeiroDiaMes)
+                    ? primeiroDiaMes
+                    : inicioCompromisso;
+            LocalDate ultimoDiaComCompromisso = fimCompromisso.isAfter(ultimoDiaMes)
+                    ? ultimoDiaMes
+                    : fimCompromisso;
+            for (LocalDate data = primeiroDiaComCompromisso;
+                 !data.isAfter(ultimoDiaComCompromisso);
+                 data = data.plusDays(1)) {
+                datasComCompromisso.add(data);
+            }
+        }
 
         List<FeriadoDTO> feriadosAno = feriadoService.listarFeriados(hoje.getYear());
         Set<LocalDate> datasFeriados = feriadosAno.stream()
@@ -137,6 +172,8 @@ public class DashboardService {
             diasCalendario.add(new DiaCalendarioDTO(dia, isHoje, temEvento));
         }
 
+        Map<Long, String> nomesProjetos = projetos.stream()
+                .collect(Collectors.toMap(Projeto::getId, Projeto::getNome));
         List<TarefaItemDTO> tarefasHoje = tarefas.stream()
                 .filter(t -> (t.getDataVencimento() != null && t.getDataVencimento().equals(hoje))
                         || (t.getStatus() != Tarefa.Status.CONCLUIDA && t.getStatus() != Tarefa.Status.CANCELADA))
@@ -145,7 +182,7 @@ public class DashboardService {
                         t.getId(),
                         t.getTitulo(),
                         t.getStatus() == Tarefa.Status.CONCLUIDA,
-                        t.getProjeto() != null ? t.getProjeto().getNome() : "Geral"
+                        t.getProjeto() != null ? nomesProjetos.getOrDefault(t.getProjeto().getId(), "Geral") : "Geral"
                 ))
                 .toList();
 
@@ -153,19 +190,22 @@ public class DashboardService {
         int percTarefas = totalTarefas > 0 ? (int) ((tarefasConcluidas * 100) / totalTarefas) : 0;
         String progressoTarefas = percTarefas + "%";
 
-        int totalConteudos = 0;
-        int conteudosConcluidos = 0;
-        for (Materia m : materiasEntities) {
-            List<ConteudoEstudo> conteudos = conteudoEstudoRepository.findByMateriaId(m.getId());
-            totalConteudos += conteudos.size();
-            conteudosConcluidos += (int) conteudos.stream().filter(c -> c.getStatus() == ConteudoEstudo.Status.CONCLUIDO).count();
-        }
+        List<Long> materiaIds = materiasEntities.stream().map(Materia::getId).toList();
+        List<ConteudoEstudo> conteudosEstudo = materiaIds.isEmpty()
+                ? Collections.emptyList()
+                : conteudoEstudoRepository.findByMateriaIdIn(materiaIds);
+        Map<Long, List<ConteudoEstudo>> conteudosPorMateria = conteudosEstudo.stream()
+                .collect(Collectors.groupingBy(c -> c.getMateria().getId()));
+        int totalConteudos = conteudosEstudo.size();
+        int conteudosConcluidos = (int) conteudosEstudo.stream()
+                .filter(c -> c.getStatus() == ConteudoEstudo.Status.CONCLUIDO)
+                .count();
         int percEstudos = totalConteudos > 0 ? (conteudosConcluidos * 100) / totalConteudos : 0;
         String progressoEstudos = percEstudos + "%";
 
-        List<Habito> habitosAtivos = habitos.stream().filter(Habito::isAtivo).toList();
-        long habitosHojeConcluidos = habitosAtivos.stream()
-                .filter(h -> registroHabitoRepository.existsByHabitoIdAndDataRegistro(h.getId(), hoje))
+        Set<Long> habitosConcluidosHoje = habitosConcluidosPorData.getOrDefault(hoje, Collections.emptySet());
+        long habitosHojeConcluidos = habitoIdsAtivos.stream()
+                .filter(habitosConcluidosHoje::contains)
                 .count();
         int percHabitos = !habitosAtivos.isEmpty() ? (int) ((habitosHojeConcluidos * 100) / habitosAtivos.size()) : 0;
         String progressoHabitos = percHabitos + "%";
@@ -176,11 +216,14 @@ public class DashboardService {
 
         int progressoGeral = (percTarefas + percEstudos + percHabitos + percProjetos) / 4;
 
+        Map<Long, List<Tarefa>> tarefasPorProjeto = tarefas.stream()
+                .filter(t -> t.getProjeto() != null)
+                .collect(Collectors.groupingBy(t -> t.getProjeto().getId()));
         List<ProjetoItemDTO> projetosAtivos = projetos.stream()
                 .filter(p -> p.getStatus() == Projeto.Status.EM_ANDAMENTO || p.getStatus() == Projeto.Status.PLANEJADO)
                 .limit(5)
                 .map(p -> {
-                    List<Tarefa> tarefasProjeto = tarefaRepository.findByProjetoId(p.getId());
+                    List<Tarefa> tarefasProjeto = tarefasPorProjeto.getOrDefault(p.getId(), Collections.emptyList());
                     long concluidas = tarefasProjeto.stream().filter(t -> t.getStatus() == Tarefa.Status.CONCLUIDA).count();
                     int progresso = !tarefasProjeto.isEmpty() ? (int) ((concluidas * 100) / tarefasProjeto.size()) : 0;
                     return new ProjetoItemDTO(
@@ -194,7 +237,7 @@ public class DashboardService {
         List<MateriaItemDTO> materias = materiasEntities.stream()
                 .limit(5)
                 .map(m -> {
-                    List<ConteudoEstudo> conteudos = conteudoEstudoRepository.findByMateriaId(m.getId());
+                    List<ConteudoEstudo> conteudos = conteudosPorMateria.getOrDefault(m.getId(), Collections.emptyList());
                     long concluidos = conteudos.stream().filter(c -> c.getStatus() == ConteudoEstudo.Status.CONCLUIDO).count();
                     int progresso = !conteudos.isEmpty() ? (int) ((concluidos * 100) / conteudos.size()) : 0;
                     String conteudoAtual = conteudos.stream()

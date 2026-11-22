@@ -73,17 +73,7 @@ public class TarefaController {
             @Parameter(description = "Data final para busca por vencimento")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
         Long usuarioId = usuarioContextService.obterUsuarioIdAtual();
-
-        if (status != null) {
-            return ResponseEntity.ok(tarefaService.listarPorStatus(usuarioId, status));
-        }
-        if (projetoId != null) {
-            return ResponseEntity.ok(tarefaService.listarPorProjeto(usuarioId, projetoId));
-        }
-        if (inicio != null || fim != null) {
-            return ResponseEntity.ok(tarefaService.listarPorPeriodo(usuarioId, inicio, fim));
-        }
-        return ResponseEntity.ok(tarefaService.listarPorUsuario(usuarioId));
+        return ResponseEntity.ok(tarefaService.listarComFiltros(usuarioId, status, projetoId, inicio, fim));
     }
 
     @GetMapping("/{id}")
