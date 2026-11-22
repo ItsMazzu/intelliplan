@@ -119,6 +119,17 @@ public class TarefaService {
         tarefaRepository.delete(tarefa);
     }
 
+    @Transactional
+    public TarefaResponseDTO alternarConclusao(Long usuarioId, Long id) {
+        Tarefa tarefa = buscarTarefaDoUsuario(usuarioId, id);
+        if (tarefa.getStatus() == Tarefa.Status.CONCLUIDA) {
+            tarefa.setStatus(Tarefa.Status.PENDENTE);
+        } else {
+            tarefa.setStatus(Tarefa.Status.CONCLUIDA);
+        }
+        return toResponseDTO(tarefaRepository.save(tarefa));
+    }
+
     private Tarefa buscarTarefaDoUsuario(Long usuarioId, Long id) {
         Tarefa tarefa = tarefaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tarefa não encontrada."));

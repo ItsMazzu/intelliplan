@@ -2,208 +2,206 @@
 
 ### Organize sua rotina. Planeje seus objetivos. Acompanhe sua evolução.
 
-O **IntelliPlan** é uma aplicação web de organização pessoal desenvolvida para centralizar o gerenciamento de tarefas, projetos, estudos, compromissos e hábitos em um único ambiente.
+O **IntelliPlan** é uma aplicação web de organização pessoal desenvolvida para centralizar o gerenciamento de tarefas, projetos, estudos, compromissos e hábitos em um único ambiente integrado.
 
-A proposta é oferecer uma alternativa integrada às ferramentas tradicionais de produtividade, permitindo que o usuário organize diferentes áreas da sua rotina sem precisar distribuir suas atividades entre diversas plataformas.
-
----
-
-## Sobre o projeto
-
-O IntelliPlan surgiu da proposta de desenvolver uma plataforma que auxilie na organização e no acompanhamento da rotina pessoal e acadêmica.
-
-A aplicação busca reunir recursos de planejamento e gerenciamento em uma interface intuitiva, estruturada em módulos independentes e integrados.
-
-Além da interface web, o projeto contempla uma API REST, mecanismos de autenticação e autorização e integração com serviços externos.
-
-## Funcionalidades
-
-As funcionalidades planejadas para a aplicação estão organizadas nos seguintes módulos:
-
-| Módulo | Descrição |
-|---|---|
-| Dashboard | Visão geral das atividades e informações relevantes da rotina. |
-| Tarefas | Criação, organização e acompanhamento de tarefas, prioridades e status. |
-| Projetos | Organização de atividades vinculadas a projetos pessoais ou acadêmicos. |
-| Estudos | Gerenciamento de matérias e conteúdos de estudo. |
-| Agenda | Organização de compromissos e eventos. |
-| Hábitos | Acompanhamento de hábitos e registros de frequência. |
-
-### Recursos complementares
-
-- Autenticação e autorização de acesso.
-- API REST para disponibilização dos recursos da aplicação.
-- Documentação dos endpoints com OpenAPI/Swagger.
-- Integração com serviços externos para ampliar as funcionalidades da plataforma.
-
-> Os itens representam o escopo do projeto. A disponibilidade de cada funcionalidade será atualizada conforme sua implementação.
+A proposta é oferecer uma alternativa estruturada às ferramentas tradicionais de produtividade, permitindo que o usuário organize diferentes áreas da sua rotina sem precisar distribuir suas atividades entre diversas plataformas.
 
 ---
 
-## Tecnologias e ferramentas
+## 1. Sobre o Projeto
+
+O IntelliPlan surgiu da proposta de desenvolver uma plataforma completa que auxilie na organização e no acompanhamento da rotina pessoal e acadêmica.
+
+A aplicação reúne recursos de planejamento e gerenciamento em uma arquitetura modular por domínio, combinando uma interface web server-side moderna (Thymeleaf, Tailwind CSS, Lucide Icons) com uma API RESTful completa e documentada (OpenAPI 3.0 / Swagger UI), persistência relacional com PostgreSQL e integração com serviços externos.
+
+---
+
+## 2. Funcionalidades e Módulos
+
+A aplicação está organizada nos seguintes módulos:
+
+| Módulo | Descrição | Status no Backend |
+|---|---|---|
+| **Dashboard** | Visão geral consolidada: métricas da semana, progresso geral, hábitos recentes, tarefas do dia, projetos ativos e calendário com compromissos e feriados nacionais. | **Concluído e Integrado** |
+| **Tarefas** | Criação, consulta, atualização, exclusão e alternância de status de tarefas com prioridades, datas de vencimento e vinculação opcional a projetos. | **Concluído (REST + Service)** |
+| **Projetos** | Criação e acompanhamento de projetos com status, prazos e agregação de tarefas associadas. | **Concluído (REST + Service)** |
+| **Estudos** | Gerenciamento de disciplinas/matérias e acompanhamento de tópicos/conteúdos de estudo com percentuais de conclusão. | **Concluído (REST + Service)** |
+| **Agenda** | Gerenciamento de compromissos com horários de início e término, locais e consulta por períodos. | **Concluído (REST + Service)** |
+| **Hábitos** | Cadastro de hábitos com frequências (diária, semanal, mensal), ativação/desativação e registro diário de execução. | **Concluído (REST + Service)** |
+| **Feriados** | Sincronização e consulta de feriados nacionais brasileiros via BrasilAPI, integrados à agenda e ao calendário. | **Concluído e Integrado** |
+| **Usuários** | Cadastro de contas com hash seguro de senhas via BCrypt e consulta por ID ou e-mail. | **Concluído (REST + Service)** |
+
+---
+
+## 3. Tecnologias e Ferramentas
 
 ### Backend
+- **Java 21** — linguagem de programação principal.
+- **Spring Boot 4.1.2** — framework base para a arquitetura em camadas.
+- **Spring Data JPA & Hibernate** — persistência relacional com lazy loading e métodos de consulta derivados.
+- **Jakarta Bean Validation** — validação declarativa de dados de entrada via anotações nos records.
+- **Spring Security (desenvolvimento)** — disponibilização do bean `PasswordEncoder` (BCrypt) e liberação provisória de rotas durante a fase de construção.
+- **Springdoc OpenAPI 3.2.0** — documentação padronizada e interface interativa Swagger UI.
+- **Apache Maven Wrapper (`mvnw`)** — automação de build e gerenciamento de dependências.
 
-- **Java 21** — linguagem de programação.
-- **Spring Boot 4.1.2** — framework principal da aplicação.
-- **Spring Data JPA** — abstração para persistência e acesso aos dados.
-- **Hibernate** — implementação de referência para o mapeamento objeto-relacional utilizado pelo JPA.
-- **Spring Security** — infraestrutura de autenticação e autorização (atualmente com configuração provisória para ambiente de desenvolvimento).
+### Integrações Externas
+- **BrasilAPI** — consulta resiliente de feriados nacionais via `RestClient` do Spring com timeouts de conexão (3s) e leitura (5s), tratando falhas de rede defensivamente.
 
 ### Frontend
+- **Thymeleaf** — engine de templates server-side integrado ao Spring Boot.
+- **Tailwind CSS** — estilização e layout responsivo via CDN.
+- **Lucide Icons** — biblioteca de ícones vetoriais em SVG.
+- **JavaScript (Vanilla)** — manipulação dinâmica de elementos de tela e interatividade.
 
-- **HTML5** — estrutura das páginas.
-- **CSS3** — estilização personalizada da interface.
-- **Tailwind CSS** — framework utilitário para estilização e responsividade (via CDN).
-- **Thymeleaf** — mecanismo de templates integrado ao Spring Boot para renderização no servidor.
-- **JavaScript (Vanilla)** — manipulação de interações e comportamento dinâmico no cliente.
-- **Lucide Icons** — biblioteca de ícones vetoriais integrada aos componentes da interface.
-
-### Banco de dados
-
-- **PostgreSQL** — sistema gerenciador de banco de dados relacional.
-- **Jakarta Persistence (JPA)** — especificação utilizada no mapeamento das entidades.
-
-### Validação e documentação
-
-- **Jakarta Bean Validation** — validação dos dados de entrada.
-- **Springdoc OpenAPI 3.2.0** — geração da documentação da API e interface Swagger UI.
-
-### Infraestrutura e desenvolvimento
-
-- **Apache Maven** — gerenciamento de dependências e processo de build.
-- **Apache Tomcat** — servidor de aplicação utilizado na implantação WAR.
-- **Git e GitHub** — versionamento e gerenciamento do código-fonte.
-- **Visual Studio Code / Antigravity** — ambiente de desenvolvimento.
-
-*As dependências e ferramentas são descritas conforme a configuração atual do projeto. A implementação efetiva de cada recurso será indicada no status de desenvolvimento.*
+### Banco de Dados
+- **PostgreSQL 15+** — sistema gerenciador de banco de dados relacional.
 
 ---
 
-## Arquitetura e organização
+## 4. Arquitetura e Decisões de Design
 
-O IntelliPlan adota uma organização modular por domínio, separando as responsabilidades da aplicação em camadas.
+O projeto adota uma arquitetura em camadas com separação estrita de responsabilidades:
 
-Essa abordagem busca facilitar a manutenção, a evolução e a compreensão do código, mantendo as regras de negócio separadas da persistência e da apresentação.
+```
+src/main/java/com/planner/
+├── agenda          # Compromisso: Entity, Repository, DTOs, Service e REST Controller
+├── common          # Exceções de domínio, manipulador global (RFC 7807) e UsuarioContextService
+├── config          # Configuração de segurança (SecurityConfig)
+├── dashboard       # Dashboard: DTOs, Service de agregação e MVC Controller
+├── estudos         # Matéria e ConteúdoEstudo: Entities, Repositories, DTOs, Services e Controllers
+├── habitos         # Hábito e RegistroHabito: Entities, Repositories, DTOs, Services e Controllers
+├── integracao      # BrasilAPI: Client HTTP resiliente, DTO, Service e Controller
+├── projeto         # Projeto: Entity, Repository, DTOs, Service e Controller
+├── tarefa          # Tarefa: Entity, Repository, DTOs, Service e Controller
+└── usuario         # Usuário: Entity, Repository, DTOs, Service (BCrypt) e Controller
+```
 
-### Organização dos pacotes
+### Decisões Arquiteturais Relevantes
 
-| Pacote | Responsabilidade |
-|---|---|
-| `entity` | Entidades e mapeamentos de persistência JPA. |
-| `repository` | Interfaces de acesso e consulta aos dados com Spring Data. |
-| `dto` | Objetos (records) utilizados na transferência de dados entre camadas. |
-| `service` | Regras de negócio e coordenação das operações. |
-| `controller` | Recebimento, tratamento e roteamento de requisições web e REST. |
-| `config` | Classes de configuração da aplicação (ex.: segurança com Spring Security). |
-| `common` | Componentes compartilhados, como classes de exceção e manipuladores. |
-| `integracao` | Comunicação com serviços e APIs externas. |
-
-### Estrutura de arquivos do frontend
-
-Os recursos de interface e templates da aplicação estão organizados no diretório `src/main/resources`:
-
-| Diretório | Descrição |
-|---|---|
-| `templates/` | Páginas e fragmentos HTML renderizados pelo Thymeleaf, modularizados por contexto (ex.: `dashboard/`, `fragments/`). |
-| `static/css/` | Folhas de estilo divididas entre estilos base (`base/customstyles.css`) e estilos específicos de página (`pages/dashboard.css`). |
-| `static/js/` | Scripts de interatividade da interface (`pages/dashboard.js`, `pages/interaction-dashboard.js`). |
-| `static/images/` | Imagens e recursos gráficos estáticos utilizados nos componentes visuais. |
-
-### Princípios arquiteturais
-
-- Separação de responsabilidades.
-- Baixo acoplamento entre módulos.
-- Encapsulamento das regras de negócio.
-- Validação dos dados de entrada.
-- Persistência estruturada com JPA.
-- Injeção de dependências via construtor.
-- Organização orientada à manutenção e evolução do sistema.
-
-### Configuração de segurança (provisória de desenvolvimento)
-
-O projeto conta com a classe `SecurityConfig`, responsável por disponibilizar o bean de criptografia `PasswordEncoder` utilizando o algoritmo BCrypt.
-
-Durante a fase atual de desenvolvimento local e integração visual:
-- **Rotas liberadas:** Todas as rotas estão temporariamente acessíveis (`permitAll()`) para permitir a navegação livre e facilitar a construção da interface.
-- **CSRF desabilitado:** A proteção contra CSRF está provisoriamente inativa para simplificar as requisições em ambiente de desenvolvimento.
-- **Autenticação e autorização definitivas:** Mecanismos de login, controle de sessão/JWT, proteção CSRF e isolamento formal por credencial autenticada continuam pendentes e serão implementados em etapa dedicada.
-
-### Empacotamento
-
-A aplicação utiliza o formato **WAR (Web Application Archive)**, permitindo sua implantação em um servidor de aplicações compatível com Servlet.
+1. **Sem Lombok:** Código explícito e transparente com getters, setters e construtores desenvolvidos manualmente nas entidades e uso nativo de **Java Records** para DTOs.
+2. **Isolamento de Dados por Usuário:** Todas as operações de leitura e mutação validam o ID do usuário proprietário, impedindo acesso indevido entre contas.
+3. **Resolução de Contexto Determinística:** O `UsuarioContextService` obtém o usuário atual através da propriedade configurável `app.dev.usuario-id` no `application.properties`, validando sua existência no banco.
+4. **Tratamento Global de Erros (RFC 7807):** Respostas de erro uniformes via `GlobalExceptionHandler` utilizando `ProblemDetail` com campos `type`, `title`, `status`, `detail`, `timestamp` e `erros` (validações).
+5. **Dashboard Resiliente:** O `DashboardService` agrega dados de todos os módulos para alimentar a view Thymeleaf e trata cenários de banco de dados vazio com valores zerados seguros, prevenindo qualquer ocorrência de erro HTTP 500.
 
 ---
 
-## Modelo de domínio
+## 5. Instruções para Execução Local
 
-O modelo de domínio é composto pelas seguintes entidades principais:
+### Pré-requisitos
+- **Java Development Kit (JDK) 21** instalado e configurado no `PATH`.
+- **PostgreSQL 15+** em execução localmente ou via container Docker.
+- **Git** instalado.
 
-| Entidade | Responsabilidade |
-|---|---|
-| `Usuario` | Representa o usuário e seu contexto de utilização. |
-| `Tarefa` | Representa atividades organizadas por status e prioridade. |
-| `Projeto` | Agrupa e organiza atividades relacionadas. |
-| `Materia` | Representa uma disciplina ou área de estudo. |
-| `ConteudoEstudo` | Organiza conteúdos vinculados a uma matéria. |
-| `Compromisso` | Representa eventos e compromissos da agenda. |
-| `Habito` | Representa atividades recorrentes que o usuário deseja acompanhar. |
-| `RegistroHabito` | Armazena as ocorrências associadas ao acompanhamento de hábitos. |
+### Passo 1: Clonar o Repositório
+```bash
+git clone https://github.com/Italo-Mazzucatto/IntelliPlan.git
+cd IntelliPlan
+```
 
-Os relacionamentos entre essas entidades são definidos por meio do mapeamento JPA.
+### Passo 2: Criar o Banco de Dados no PostgreSQL
+Acesse o console do PostgreSQL (`psql` ou ferramenta gráfica como DBeaver / pgAdmin) e crie o banco:
+```sql
+CREATE DATABASE intelliplan;
+```
+
+### Passo 3: Configurar as Variáveis de Ambiente
+O `application.properties` está preparado para receber as credenciais do banco via variáveis de ambiente. Defina-as no seu terminal:
+
+**No Windows (PowerShell):**
+```powershell
+$env:DB_URL="jdbc:postgresql://localhost:5432/intelliplan"
+$env:DB_USERNAME="postgres"
+$env:DB_PASSWORD="sua_senha_aqui"
+```
+
+**No Linux / macOS (Bash):**
+```bash
+export DB_URL="jdbc:postgresql://localhost:5432/intelliplan"
+export DB_USERNAME="postgres"
+export DB_PASSWORD="sua_senha_aqui"
+```
+
+### Passo 4: Configurar o Usuário de Desenvolvimento Local
+No arquivo `src/main/resources/application.properties`, configure o identificador do usuário para desenvolvimento local:
+```properties
+app.dev.usuario-id=1
+```
+
+> **Dica:** Ao executar a aplicação pela primeira vez com o banco vazio, crie seu primeiro usuário via requisição `POST /api/v1/usuarios`. Esse usuário receberá o ID `1` e será utilizado automaticamente nas operações e na visualização do dashboard.
+
+### Passo 5: Compilar e Executar a Aplicação
+
+**Para compilar e empacotar o artefato WAR:**
+```bash
+./mvnw clean package -DskipTests
+```
+
+**Para iniciar a aplicação diretamente via Maven Wrapper:**
+```bash
+./mvnw spring-boot:run
+```
+
+A aplicação iniciará na porta padrão `8080`.
 
 ---
 
-## Status do desenvolvimento
+## 6. Acesso aos Canais da Aplicação
 
-<badge color="info">Em desenvolvimento</badge>
+### Interface Web (Dashboard)
+Abra o navegador no endereço:
+```
+http://localhost:8080/
+```
+*(ou `http://localhost:8080/dashboard`)*
 
-O IntelliPlan encontra-se em fase de integração entre a camada de negócio e a interface do usuário.
+O dashboard carregará as métricas da sua rotina, tarefas, projetos, matérias, hábitos e o calendário com compromissos e feriados nacionais.
 
-| Etapa | Situação | Observações |
+### Documentação OpenAPI / Swagger UI
+Para explorar e testar interativamente todos os endpoints RESTful:
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+A documentação em formato JSON da especificação OpenAPI 3.0 está acessível em:
+```
+http://localhost:8080/v3/api-docs
+```
+
+---
+
+## 7. Status do Desenvolvimento
+
+| Componente | Situação | Observações |
 |---|---|---|
-| Estrutura inicial do projeto | Concluída | Configuração base com Maven, Spring Boot e empacotamento WAR. |
-| Modelagem das entidades JPA | Concluída | 8 entidades mapeadas com Jakarta Persistence. |
-| Repositories | Concluídos | Interfaces Spring Data JPA com métodos derivados específicos. |
-| DTOs e validações | Concluídos | Records para transporte de dados e Bean Validation. |
-| Exceções customizadas | Concluídas | Exceções de domínio para recursos não encontrados, regras e duplicidades. |
-| Camada de Services | Concluída | 8 services implementados com regras de integridade, isolamento e transações. |
-| Configuração de segurança | Em desenvolvimento | Bean `PasswordEncoder` (BCrypt) configurado; rotas liberadas e CSRF desabilitado provisoriamente para desenvolvimento. |
-| Controllers e rotas | Em desenvolvimento | `DashboardController` implementado com mapeamento inicial da rota `/`. |
-| Interface web (Dashboard) | Em desenvolvimento | Estrutura visual inicial com Thymeleaf, Tailwind CSS, Lucide Icons e scripts JS interativos (dados de backend ainda não vinculados). |
-| Autenticação e autorização | Pendente | Fluxo definitivo de login, cadastro, controle de acesso e proteção CSRF. |
-| API REST e documentação | Pendente | Endpoints RESTful dos módulos e documentação com OpenAPI/Swagger. |
-| Integração com serviços externos | Pendente | Comunicação com APIs externas de apoio. |
-| Validação e implantação final | Pendente | Testes de integração, segurança e deploy de produção. |
-
-> **Nota sobre o Dashboard:** A página inicial (`/`) já está acessível através do `DashboardController`, contando com layout responsivo, ícones Lucide e interações em JavaScript (como alternância visual de favoritos, atalhos de busca e marcação demonstrativa de checkboxes). Contudo, os cards e seções ainda exibem dados demonstrativos de template, pois a integração direta com os Services (tarefas, projetos, estudos, hábitos e agenda) e as rotas dos demais módulos continuam em fase de desenvolvimento.
+| **Estrutura Base e Maven** | Concluída | Java 21, Spring Boot 4.1.2 e empacotamento WAR operacional. |
+| **Modelagem JPA (8 Entidades)** | Concluída | `Usuario`, `Tarefa`, `Projeto`, `Materia`, `ConteudoEstudo`, `Compromisso`, `Habito`, `RegistroHabito`. |
+| **Repositories (8 Repositories)** | Concluídos | Interfaces Spring Data JPA com consultas derivadas e filtros por usuário. |
+| **DTOs e Validações** | Concluídos | Records Java com validações Jakarta (`@NotBlank`, `@Size`, etc.). |
+| **Camada de Services (8 Services)** | Concluída | Regras de negócio, transações (`@Transactional`) e isolamento estrito de dados. |
+| **Tratamento de Exceções** | Concluído | `GlobalExceptionHandler` mapeando exceções de domínio e validação para RFC 7807 (`ProblemDetail`). |
+| **Controllers REST (8 Controllers)** | Concluídos | Endpoints RESTful versionados sob `/api/v1/` com anotações OpenAPI. |
+| **Integração BrasilAPI** | Concluída | Client HTTP resiliente com timeouts para feriados nacionais e endpoint `/api/v1/feriados/{ano}`. |
+| **Contexto de Usuário Local** | Concluído | `UsuarioContextService` com resolução determinística via `app.dev.usuario-id`. |
+| **Dashboard com Dados Reais** | Concluído | Agregação completa de métricas, progresso e calendário sem erros em banco vazio. |
+| **Segurança Provisória** | Concluída | `SecurityConfig` com bean `BCryptPasswordEncoder` e rotas liberadas para desenvolvimento. |
+| **Autenticação Definitiva** | Planejada | Implementação futura de tela de login/logout, tokens JWT ou sessões autenticadas e proteção CSRF ativa. |
+| **Telas Frontend dos Demais Módulos** | Planejada | Implementação das interfaces visuais completas de cadastro e listagem para tarefas, projetos, estudos, agenda e hábitos. |
 
 ---
 
-## Execução do projeto
+## 8. Documentação Complementar
 
-As instruções de instalação, configuração do ambiente, conexão com o PostgreSQL e execução serão adicionadas após a conclusão das configurações necessárias para executar a aplicação.
-
----
-
-## Equipe de desenvolvimento
-
-**Italo Mazzucatto**
-
-Desenvolvimento e implementação da aplicação.
-
-**Laís Campos**
-
-Desenvolvimento e implementação da aplicação.
+- [Guia Técnico de Arquitetura e Funcionamento](file:///c:/Users/italo/OneDrive/Desktop/Studies%20-%20Academics/Coding/Backend/Java/IntelliPlan/docs/GUIA_TECNICO.md) — Documentação exaustiva com diagramas de sequência, contratos de rotas, ciclo de vida de requisição e detalhamento de pacotes.
+- [Histórico Técnico de Desenvolvimento](file:///c:/Users/italo/OneDrive/Desktop/Studies%20-%20Academics/Coding/Backend/Java/IntelliPlan/docs/HISTORICO_TECNICO.md) — Análise detalhada dos commits Git, evolução das fases e problemas técnicos superados.
 
 ---
 
-## Objetivo acadêmico
+## 9. Equipe de Desenvolvimento
 
-O IntelliPlan é desenvolvido no contexto acadêmico como projeto de aplicação de conhecimentos em desenvolvimento de software, arquitetura de aplicações web, persistência de dados, segurança e integração de sistemas.
-
-O projeto busca aplicar boas práticas de engenharia de software durante todo o seu ciclo de desenvolvimento.
+- **Italo Mazzucatto** — Engenharia de Software e Desenvolvimento Backend / Integração.
+- **Laís Campos** — Design de Interface, Estilização e Desenvolvimento Frontend.
 
 ---
 
-*IntelliPlan — Organização e planejamento em um só lugar.*
+*IntelliPlan — Planeje com intenção, avance no seu ritmo.*
