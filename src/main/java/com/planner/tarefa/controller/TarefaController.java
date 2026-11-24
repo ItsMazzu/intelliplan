@@ -1,129 +1,229 @@
 package com.planner.tarefa.controller;
 
 import com.planner.common.context.UsuarioContextService;
+import com.planner.projeto.dto.ProjetoResponseDTO;
+import com.planner.projeto.service.ProjetoService;
 import com.planner.tarefa.dto.TarefaRequestDTO;
 import com.planner.tarefa.dto.TarefaResponseDTO;
 import com.planner.tarefa.entity.Tarefa;
 import com.planner.tarefa.service.TarefaService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.planner.usuario.dto.UsuarioResponseDTO;
+import com.planner.usuario.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.net.URI;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-@RestController
-@RequestMapping("/api/v1/tarefas")
-@Tag(name = "Tarefas", description = "Operações para gerenciamento de tarefas do usuário")
-public class TarefaController {
+@Controller
+@RequestMapping("/tarefas")
+public class TarefaViewController {
 
     private final TarefaService tarefaService;
+    private final ProjetoService projetoService;
+    private final UsuarioService usuarioService;
     private final UsuarioContextService usuarioContextService;
 
-    public TarefaController(TarefaService tarefaService, UsuarioContextService usuarioContextService) {
+    public TarefaViewController(TarefaService tarefaService,
+                                ProjetoService projetoService,
+                                UsuarioService usuarioService,
+                                UsuarioContextService usuarioContextService) {
         this.tarefaService = tarefaService;
+        this.projetoService = projetoService;
+        this.usuarioService = usuarioService;
         this.usuarioContextService = usuarioContextService;
     }
 
-    @PostMapping
-    @Operation(summary = "Criar tarefa", description = "Registra uma nova tarefa para o usuário, com associação opcional a um projeto")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Tarefa criada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados da tarefa inválidos"),
-            @ApiResponse(responseCode = "404", description = "Projeto informado não encontrado")
-    })
-    public ResponseEntity<TarefaResponseDTO> criar(@Valid @RequestBody TarefaRequestDTO dto) {
-        Long usuarioId = usuarioContextService.obterUsuarioIdAtual();
-        TarefaResponseDTO response = tarefaService.criar(usuarioId, dto);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(response.id())
-                .toUri();
-        return ResponseEntity.created(location).body(response);
-    }
-
     @GetMapping
-    @Operation(summary = "Listar tarefas", description = "Lista as tarefas do usuário com filtros opcionais por status, projeto ou período de vencimento")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Tarefas listadas com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Parâmetros de período inválidos")
-    })
-    public ResponseEntity<List<TarefaResponseDTO>> listar(
-            @Parameter(description = "Filtro opcional por status") @RequestParam(required = false) Tarefa.Status status,
-            @Parameter(description = "Filtro opcional por projeto") @RequestParam(required = false) Long projetoId,
-            @Parameter(description = "Data inicial para busca por vencimento")
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
-            @Parameter(description = "Data final para busca por vencimento")
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
-        Long usuarioId = usuarioContextService.obterUsuarioIdAtual();
-        return ResponseEntity.ok(tarefaService.listarComFiltros(usuarioId, status, projetoId, inicio, fim));
+    public String listar(@RequestParam(required = false) Tarefa.Status status,
+                         @RequestParam(required = false) Long projetoId,
+                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim,
+                         Model model) {
+        Optional<Long> usuarioIdOpt = usuarioContextService.obterUsuarioIdOpcional();
+        if (usuarioIdOpt.isEmpty()) {
+            popularDadosVazios(model);
+            return "tarefas/tarefas";
+        }
+
+        Long usuarioId = usuarioIdOpt.get();
+        UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
+        List<TarefaResponseDTO> tarefas = tarefaService.listarComFiltros(usuarioId, status, projetoId, inicio, fim);
+        List<ProjetoResponseDTO> projetos = projetoService.listarPorUsuario(usuarioId);
+
+        List<TarefaResponseDTO> todasDoUsuario = tarefaService.listarPorUsuario(usuarioId);
+        long totalTarefas = todasDoUsuario.size();
+        long totalPendentes = todasDoUsuario.stream().filter(t -> t.status() == Tarefa.Status.PENDENTE).count();
+        long totalEmAndamento = todasDoUsuario.stream().filter(t -> t.status() == Tarefa.Status.EM_ANDAMENTO).count();
+        long totalConcluidas = todasDoUsuario.stream().filter(t -> t.status() == Tarefa.Status.CONCLUIDA).count();
+
+        model.addAttribute("usuarioNome", usuario.nome());
+        model.addAttribute("primeiroNome", extrairPrimeiroNome(usuario.nome()));
+        model.addAttribute("tarefas", tarefas);
+        model.addAttribute("projetos", projetos);
+        model.addAttribute("statusSelecionado", status);
+        model.addAttribute("projetoIdSelecionado", projetoId);
+        model.addAttribute("inicioSelecionado", inicio);
+        model.addAttribute("fimSelecionado", fim);
+        model.addAttribute("totalTarefas", totalTarefas);
+        model.addAttribute("totalPendentes", totalPendentes);
+        model.addAttribute("totalEmAndamento", totalEmAndamento);
+        model.addAttribute("totalConcluidas", totalConcluidas);
+
+        return "tarefas/tarefas";
     }
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Buscar tarefa por ID", description = "Retorna os detalhes de uma tarefa específica do usuário")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Tarefa encontrada"),
-            @ApiResponse(responseCode = "404", description = "Tarefa não encontrada")
-    })
-    public ResponseEntity<TarefaResponseDTO> buscarPorId(
-            @Parameter(description = "Identificador único da tarefa") @PathVariable Long id) {
-        Long usuarioId = usuarioContextService.obterUsuarioIdAtual();
-        return ResponseEntity.ok(tarefaService.buscarPorId(usuarioId, id));
+    @GetMapping("/nova")
+    public String formularioNovo(Model model) {
+        Optional<Long> usuarioIdOpt = usuarioContextService.obterUsuarioIdOpcional();
+        if (usuarioIdOpt.isEmpty()) {
+            return "redirect:/tarefas";
+        }
+
+        Long usuarioId = usuarioIdOpt.get();
+        UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
+        List<ProjetoResponseDTO> projetos = projetoService.listarPorUsuario(usuarioId);
+
+        if (!model.containsAttribute("tarefaForm")) {
+            model.addAttribute("tarefaForm", new TarefaRequestDTO("", "", Tarefa.Status.PENDENTE, Tarefa.Prioridade.MEDIA, null, null));
+        }
+
+        model.addAttribute("usuarioNome", usuario.nome());
+        model.addAttribute("projetos", projetos);
+        model.addAttribute("statusOpcoes", Tarefa.Status.values());
+        model.addAttribute("prioridadeOpcoes", Tarefa.Prioridade.values());
+        model.addAttribute("modoEdicao", false);
+
+        return "tarefas/formulario";
     }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Atualizar tarefa", description = "Atualiza os dados de uma tarefa existente do usuário")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Tarefa atualizada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados da tarefa inválidos"),
-            @ApiResponse(responseCode = "404", description = "Tarefa ou projeto informado não encontrado")
-    })
-    public ResponseEntity<TarefaResponseDTO> atualizar(
-            @Parameter(description = "Identificador único da tarefa") @PathVariable Long id,
-            @Valid @RequestBody TarefaRequestDTO dto) {
-        Long usuarioId = usuarioContextService.obterUsuarioIdAtual();
-        return ResponseEntity.ok(tarefaService.atualizar(usuarioId, id, dto));
+    @PostMapping
+    public String salvar(@Valid @ModelAttribute("tarefaForm") TarefaRequestDTO dto,
+                         BindingResult bindingResult,
+                         Model model,
+                         RedirectAttributes redirectAttributes) {
+        Optional<Long> usuarioIdOpt = usuarioContextService.obterUsuarioIdOpcional();
+        if (usuarioIdOpt.isEmpty()) {
+            return "redirect:/tarefas";
+        }
+
+        Long usuarioId = usuarioIdOpt.get();
+        if (bindingResult.hasErrors()) {
+            UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
+            model.addAttribute("usuarioNome", usuario.nome());
+            model.addAttribute("projetos", projetoService.listarPorUsuario(usuarioId));
+            model.addAttribute("statusOpcoes", Tarefa.Status.values());
+            model.addAttribute("prioridadeOpcoes", Tarefa.Prioridade.values());
+            model.addAttribute("modoEdicao", false);
+            return "tarefas/formulario";
+        }
+
+        tarefaService.criar(usuarioId, dto);
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Tarefa criada com sucesso!");
+        return "redirect:/tarefas";
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Excluir tarefa", description = "Remove uma tarefa do usuário")
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Tarefa excluída com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Tarefa não encontrada")
-    })
-    public ResponseEntity<Void> excluir(
-            @Parameter(description = "Identificador único da tarefa") @PathVariable Long id) {
-        Long usuarioId = usuarioContextService.obterUsuarioIdAtual();
-        tarefaService.excluir(usuarioId, id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/{id}/editar")
+    public String formularioEditar(@PathVariable Long id, Model model) {
+        Optional<Long> usuarioIdOpt = usuarioContextService.obterUsuarioIdOpcional();
+        if (usuarioIdOpt.isEmpty()) {
+            return "redirect:/tarefas";
+        }
+
+        Long usuarioId = usuarioIdOpt.get();
+        UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
+        TarefaResponseDTO tarefa = tarefaService.buscarPorId(usuarioId, id);
+        List<ProjetoResponseDTO> projetos = projetoService.listarPorUsuario(usuarioId);
+
+        if (!model.containsAttribute("tarefaForm")) {
+            model.addAttribute("tarefaForm", new TarefaRequestDTO(
+                    tarefa.titulo(),
+                    tarefa.descricao(),
+                    tarefa.status(),
+                    tarefa.prioridade(),
+                    tarefa.dataVencimento(),
+                    tarefa.projetoId()
+            ));
+        }
+
+        model.addAttribute("usuarioNome", usuario.nome());
+        model.addAttribute("tarefaId", id);
+        model.addAttribute("projetos", projetos);
+        model.addAttribute("statusOpcoes", Tarefa.Status.values());
+        model.addAttribute("prioridadeOpcoes", Tarefa.Prioridade.values());
+        model.addAttribute("modoEdicao", true);
+
+        return "tarefas/formulario";
     }
 
-    @PatchMapping("/{id}/concluir")
-    @Operation(summary = "Alternar conclusão da tarefa", description = "Alterna o status da tarefa entre concluída e pendente")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Status da tarefa alternado com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Tarefa não encontrada")
-    })
-    public ResponseEntity<TarefaResponseDTO> alternarConclusao(
-            @Parameter(description = "Identificador único da tarefa") @PathVariable Long id) {
-        Long usuarioId = usuarioContextService.obterUsuarioIdAtual();
-        return ResponseEntity.ok(tarefaService.alternarConclusao(usuarioId, id));
+    @PostMapping("/{id}/editar")
+    public String atualizar(@PathVariable Long id,
+                            @Valid @ModelAttribute("tarefaForm") TarefaRequestDTO dto,
+                            BindingResult bindingResult,
+                            Model model,
+                            RedirectAttributes redirectAttributes) {
+        Optional<Long> usuarioIdOpt = usuarioContextService.obterUsuarioIdOpcional();
+        if (usuarioIdOpt.isEmpty()) {
+            return "redirect:/tarefas";
+        }
+
+        Long usuarioId = usuarioIdOpt.get();
+        if (bindingResult.hasErrors()) {
+            UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
+            model.addAttribute("usuarioNome", usuario.nome());
+            model.addAttribute("tarefaId", id);
+            model.addAttribute("projetos", projetoService.listarPorUsuario(usuarioId));
+            model.addAttribute("statusOpcoes", Tarefa.Status.values());
+            model.addAttribute("prioridadeOpcoes", Tarefa.Prioridade.values());
+            model.addAttribute("modoEdicao", true);
+            return "tarefas/formulario";
+        }
+
+        tarefaService.atualizar(usuarioId, id, dto);
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Tarefa atualizada com sucesso!");
+        return "redirect:/tarefas";
+    }
+
+    @PostMapping("/{id}/excluir")
+    public String excluir(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        usuarioContextService.obterUsuarioIdOpcional().ifPresent(usuarioId ->
+                tarefaService.excluir(usuarioId, id));
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Tarefa excluída com sucesso!");
+        return "redirect:/tarefas";
+    }
+
+    private void popularDadosVazios(Model model) {
+        model.addAttribute("usuarioNome", "Visitante");
+        model.addAttribute("primeiroNome", "Visitante");
+        model.addAttribute("tarefas", Collections.emptyList());
+        model.addAttribute("projetos", Collections.emptyList());
+        model.addAttribute("statusSelecionado", null);
+        model.addAttribute("projetoIdSelecionado", null);
+        model.addAttribute("inicioSelecionado", null);
+        model.addAttribute("fimSelecionado", null);
+        model.addAttribute("totalTarefas", 0L);
+        model.addAttribute("totalPendentes", 0L);
+        model.addAttribute("totalEmAndamento", 0L);
+        model.addAttribute("totalConcluidas", 0L);
+    }
+
+    private String extrairPrimeiroNome(String nomeCompleto) {
+        if (nomeCompleto == null || nomeCompleto.isBlank()) {
+            return "Visitante";
+        }
+        String[] partes = nomeCompleto.trim().split("\\s+");
+        return partes[0];
     }
 }
