@@ -30,7 +30,10 @@
         <p class="text-xs text-purple-200/70">Meu espaço</p>
       </div>
     </div>
-    <a th:href="@{/configuracoes}" href="/configuracoes" aria-label="Configurações"><i data-lucide="settings" class="h-5 w-5 text-purple-200"></i></a>
+    <form th:action="@{/logout}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <button type="submit" aria-label="Sair"><i data-lucide="log-out" class="h-5 w-5 text-purple-200"></i></button>
+    </form>
   </div>
 </aside>
 

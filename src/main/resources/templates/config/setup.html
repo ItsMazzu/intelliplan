@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliPlan | Configuração inicial</title>
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}">
+</head>
+<body>
+<main class="login-page">
+  <section class="login-panel">
+    <div class="login-card">
+      <div class="login-brand"><span>IntelliPlan</span></div>
+      <h2>Configuração inicial</h2>
+      <p th:if="${mensagemErro}" th:text="${mensagemErro}"></p>
+      <p th:if="${mensagemSucesso}" th:text="${mensagemSucesso}"></p>
+
+      <h3>Banco de dados</h3>
+      <form th:action="@{/setup/testar}" th:object="${databaseConfig}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <div class="form-field">
+          <label for="host">Host</label>
+          <input id="host" th:field="*{host}" required>
+        </div>
+        <div class="form-field">
+          <label for="porta">Porta</label>
+          <input id="porta" th:field="*{porta}" type="number" min="1" max="65535" required>
+        </div>
+        <div class="form-field">
+          <label for="banco">Banco</label>
+          <input id="banco" th:field="*{banco}" required>
+        </div>
+        <div class="form-field">
+          <label for="usuario">Usuário</label>
+          <input id="usuario" th:field="*{usuario}" required autocomplete="username">
+        </div>
+        <div class="form-field">
+          <label for="senhaBanco">Senha do banco</label>
+          <input id="senhaBanco" th:field="*{senha}" type="password" autocomplete="current-password">
+        </div>
+        <button type="submit" class="primary-button">Testar conexão</button>
+      </form>
+
+      <h3>Conta principal</h3>
+      <form th:action="@{/setup/criar-conta}" th:object="${contaPrincipal}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <div class="form-field">
+          <label for="nome">Nome</label>
+          <input id="nome" th:field="*{nome}" required maxlength="150">
+        </div>
+        <div class="form-field">
+          <label for="emailConta">E-mail</label>
+          <input id="emailConta" th:field="*{email}" type="email" required maxlength="200">
+        </div>
+        <div class="form-field">
+          <label for="senhaConta">Senha</label>
+          <input id="senhaConta" th:field="*{senha}" type="password" minlength="8" maxlength="100" required autocomplete="new-password">
+        </div>
+        <div class="form-field">
+          <label for="confirmarSenha">Confirmar senha</label>
+          <input id="confirmarSenha" th:field="*{confirmarSenha}" type="password" minlength="8" maxlength="100" required autocomplete="new-password">
+        </div>
+        <button type="submit" class="primary-button">Criar conta principal</button>
+      </form>
+    </div>
+  </section>
+</main>
+</body>
+</html>
