@@ -1,127 +1,37 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<!-- ===== SIDEBAR ===== -->
-<aside th:fragment="sidebar" class="sidebar">
-    <!-- Logo -->
-    <div class="sidebar-logo">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-        <span>IntelliPlan</span>
-    </div>
+<aside th:fragment="sidebar(ativo)" class="sidebar flex w-full flex-col text-white lg:fixed lg:inset-y-0 lg:w-[216px]">
+  <a th:href="@{/}" class="flex items-center gap-3 px-6 py-7">
+    <span class="brand-mark"><i data-lucide="sparkle" class="h-7 w-7"></i></span>
+    <span class="text-xl font-extrabold tracking-tight">IntelliPlan</span>
+  </a>
 
-    <!-- Navegação -->
-    <nav class="sidebar-nav">
-        <a th:href="@{/}" class="nav-item active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1"/>
-                <rect x="14" y="3" width="7" height="7" rx="1"/>
-                <rect x="3" y="14" width="7" height="7" rx="1"/>
-                <rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-            <span>Dashboard</span>
-        </a>
-        <a th:href="@{/tarefas}" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 11l3 3L22 4"/>
-                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-            </svg>
-            <span>Tarefas</span>
-        </a>
-        <a th:href="@{/projetos}" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
-            </svg>
-            <span>Projetos</span>
-        </a>
-        <a th:href="@{/estudos}" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-            </svg>
-            <span>Estudos</span>
-        </a>
-        <a th:href="@{/agenda}" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            <span>Agenda</span>
-        </a>
-        <a th:href="@{/habitos}" class="nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-            </svg>
-            <span>Hábitos</span>
-        </a>
-    </nav>
+  <nav class="flex gap-1 overflow-x-auto px-3 pb-4 lg:flex-col lg:overflow-visible" aria-label="Navegação principal">
+    <a th:href="@{/dashboard}" href="/dashboard" class="nav-link" th:classappend="${ativo == 'dashboard'} ? ' active' : ''"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+    <a th:href="@{/tarefas}" href="/tarefas" class="nav-link" th:classappend="${ativo == 'tarefas'} ? ' active' : ''"><i data-lucide="square-check-big"></i><span>Tarefas</span></a>
+    <a th:href="@{/projetos}" href="/projetos" class="nav-link" th:classappend="${ativo == 'projetos'} ? ' active' : ''"><i data-lucide="folder"></i><span>Projetos</span></a>
+    <a th:href="@{/estudos}" href="/estudos" class="nav-link" th:classappend="${ativo == 'estudos'} ? ' active' : ''"><i data-lucide="book-open"></i><span>Estudos</span></a>
+    <a th:href="@{/agenda}" href="/agenda" class="nav-link" th:classappend="${ativo == 'agenda'} ? ' active' : ''"><i data-lucide="calendar-days"></i><span>Agenda</span></a>
+    <a th:href="@{/habitos}" href="/habitos" class="nav-link" th:classappend="${ativo == 'habitos'} ? ' active' : ''"><i data-lucide="heart"></i><span>Hábitos</span></a>
+  </nav>
 
-    <!-- Seção Motivacional com Gato -->
-    <div class="sidebar-motivation">
-        <svg class="motivation-cat" width="60" height="60" viewBox="0 0 60 60">
-            <!-- Corpo do gato -->
-            <ellipse cx="30" cy="42" rx="18" ry="14" fill="#2d1b4e"/>
-            <!-- Cabeça -->
-            <circle cx="30" cy="25" r="13" fill="#2d1b4e"/>
-            <!-- Orelhas -->
-            <polygon points="20,16 15,4 25,13" fill="#2d1b4e"/>
-            <polygon points="40,16 45,4 35,13" fill="#2d1b4e"/>
-            <!-- Interior orelhas -->
-            <polygon points="21,15 18,7 25,13" fill="#c084fc" opacity="0.5"/>
-            <polygon points="39,15 42,7 35,13" fill="#c084fc" opacity="0.5"/>
-            <!-- Olhos -->
-            <ellipse cx="25" cy="24" rx="3" ry="3.5" fill="#c084fc"/>
-            <ellipse cx="35" cy="24" rx="3" ry="3.5" fill="#c084fc"/>
-            <ellipse cx="25" cy="24" rx="1.5" ry="2" fill="#1a0a2e"/>
-            <ellipse cx="35" cy="24" rx="1.5" ry="2" fill="#1a0a2e"/>
-            <!-- Brilho nos olhos -->
-            <circle cx="26" cy="23" r="1" fill="white" opacity="0.8"/>
-            <circle cx="36" cy="23" r="1" fill="white" opacity="0.8"/>
-            <!-- Nariz -->
-            <ellipse cx="30" cy="28" rx="1.5" ry="1" fill="#ec4899"/>
-            <!-- Boca -->
-            <path d="M28 29 Q30 31 32 29" fill="none" stroke="#c084fc" stroke-width="0.8" opacity="0.6"/>
-            <!-- Rabo -->
-            <path d="M48 42 Q55 30 50 25" fill="none" stroke="#2d1b4e" stroke-width="3" stroke-linecap="round"/>
-        </svg>
-        <h4>Você consegue!</h4>
-        <p>Continue organizando sua rotina ✨</p>
-    </div>
+  <div class="mx-5 my-4 hidden border-t border-white/15 lg:block"></div>
 
-    <!-- Perfil do Usuário -->
-    <div class="sidebar-profile">
-        <div class="profile-info">
-            <div class="profile-avatar">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                </svg>
-            </div>
-            <span class="profile-name" th:text="${nomeCompleto}">Laís Campos</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" style="margin-left: auto; cursor: pointer;">
-                <polyline points="6 9 12 15 18 9"/>
-            </svg>
-        </div>
-        <a class="profile-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
-            </svg>
-            <span>Configurações</span>
-        </a>
-        <a class="profile-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            <span>Sair</span>
-        </a>
+  <!-- Card 1 com a arte do gatinho -->
+  <div class="sidebar-note mx-4 mb-5 mt-auto hidden rounded-2xl p-5 lg:block" aria-label="Card motivacional"></div>
+
+  <div class="mt-auto flex items-center justify-between border-t border-white/10 px-5 py-5">
+    <div class="flex min-w-0 items-center gap-3">
+      <div class="avatar">LC</div>
+      <div class="min-w-0">
+        <p class="truncate text-sm font-semibold" th:text="${usuarioNome} ?: 'Laís Campos'">Laís Campos</p>
+        <p class="text-xs text-purple-200/70">Meu espaço</p>
+      </div>
     </div>
+    <a th:href="@{/configuracoes}" href="/configuracoes" aria-label="Configurações"><i data-lucide="settings" class="h-5 w-5 text-purple-200"></i></a>
+  </div>
 </aside>
 
 </body>
