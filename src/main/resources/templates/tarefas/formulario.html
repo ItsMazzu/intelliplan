@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${modoEdicao} ? 'IntelliPlan | Editar Tarefa' : 'IntelliPlan | Nova Tarefa'">IntelliPlan | Tarefa</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#241b35',
+            plum: '#2b203b',
+            violet: '#7545d6',
+            lilac: '#a98be9',
+            mist: '#f7f4fa',
+            line: '#eee8f3'
+          },
+          boxShadow: {
+            soft: '0 8px 28px rgba(47, 31, 69, .07)'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+
+
+  <div th:replace="~{fragments/sidebar :: sidebar('tarefas')}"></div>
+
+ 
+  <main class="min-w-0 flex-1 lg:ml-[216px]">
+    <!-- Topbar -->
+    <header class="topbar sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 px-5 py-4 md:px-8">
+      <a th:href="@{/tarefas}" class="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-violet transition">
+        <i data-lucide="arrow-left" class="h-4 w-4"></i>
+        <span>Voltar para tarefas</span>
+      </a>
+      <div class="flex items-center gap-3">
+        <button class="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-purple-50">
+          <div class="avatar avatar-small">LC</div>
+          <span class="hidden text-sm font-semibold sm:inline" th:text="${usuarioNome} ?: 'Laís'">Laís</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-3xl space-y-6 px-5 pb-10 pt-6 md:px-8">
+
+  
+      <div class="border-b border-line pb-4">
+        <h1 class="text-2xl font-extrabold tracking-tight text-ink md:text-3xl"
+            th:text="${modoEdicao} ? 'Editar Tarefa' : 'Criar Nova Tarefa'">Nova Tarefa</h1>
+        <p class="text-sm text-slate-500 mt-1">Preencha as informações da tarefa para manter sua rotina organizada.</p>
+      </div>
+
+     
+      <section class="panel p-6 md:p-8">
+        <form th:action="${modoEdicao} ? @{/tarefas/{id}/editar(id=${tarefaId})} : @{/tarefas}"
+              th:object="${tarefaForm}"
+              method="post"
+              class="space-y-6">
+
+     
+          <div>
+            <label for="titulo" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+              Título da Tarefa <span class="text-rose-500">*</span>
+            </label>
+            <input type="text"
+                   id="titulo"
+                   th:field="*{titulo}"
+                   placeholder="Ex.: Estudar para a prova de Cálculo"
+                   class="w-full rounded-2xl border bg-mist px-4 py-3 text-sm text-ink outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10"
+                   th:classappend="${#fields.hasErrors('titulo')} ? 'border-rose-400 bg-rose-50/30' : 'border-line'">
+            <p th:if="${#fields.hasErrors('titulo')}"
+               th:errors="*{titulo}"
+               class="mt-1.5 text-xs text-rose-500 font-semibold"></p>
+          </div>
+
+      
+          <div>
+            <label for="descricao" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+              Descrição Detalhada
+            </label>
+            <textarea id="descricao"
+                      th:field="*{descricao}"
+                      rows="3"
+                      placeholder="Descreva detalhes, anotações ou observações úteis..."
+                      class="w-full rounded-2xl border border-line bg-mist px-4 py-3 text-sm text-ink outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10"></textarea>
+          </div>
+
+     
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label for="status" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                Status <span class="text-rose-500">*</span>
+              </label>
+              <select id="status"
+                      th:field="*{status}"
+                      class="w-full rounded-2xl border border-line bg-mist px-4 py-3 text-sm text-ink outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10">
+                <option th:each="st : ${statusOpcoes}"
+                        th:value="${st}"
+                        th:text="${st.name() == 'PENDENTE' ? 'Pendente' : (st.name() == 'EM_ANDAMENTO' ? 'Em andamento' : (st.name() == 'CONCLUIDA' ? 'Concluída' : 'Cancelada'))}">
+                  Pendente
+                </option>
+              </select>
+              <p th:if="${#fields.hasErrors('status')}"
+                 th:errors="*{status}"
+                 class="mt-1.5 text-xs text-rose-500 font-semibold"></p>
+            </div>
+
+            <div>
+              <label for="prioridade" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                Prioridade <span class="text-rose-500">*</span>
+              </label>
+              <select id="prioridade"
+                      th:field="*{prioridade}"
+                      class="w-full rounded-2xl border border-line bg-mist px-4 py-3 text-sm text-ink outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10">
+                <option th:each="pri : ${prioridadeOpcoes}"
+                        th:value="${pri}"
+                        th:text="${pri.name() == 'ALTA' ? 'Alta' : (pri.name() == 'MEDIA' ? 'Média' : 'Baixa')}">
+                  Média
+                </option>
+              </select>
+              <p th:if="${#fields.hasErrors('prioridade')}"
+                 th:errors="*{prioridade}"
+                 class="mt-1.5 text-xs text-rose-500 font-semibold"></p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label for="dataVencimento" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                Data de Vencimento
+              </label>
+              <input type="date"
+                     id="dataVencimento"
+                     th:field="*{dataVencimento}"
+                     class="w-full rounded-2xl border border-line bg-mist px-4 py-3 text-sm text-ink outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10">
+            </div>
+
+            <div>
+              <label for="projetoId" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                Vincular a um Projeto (opcional)
+              </label>
+              <select id="projetoId"
+                      th:field="*{projetoId}"
+                      class="w-full rounded-2xl border border-line bg-mist px-4 py-3 text-sm text-ink outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10">
+                <option value="">Nenhum projeto vinculado</option>
+                <option th:each="proj : ${projetos}"
+                        th:value="${proj.id()}"
+                        th:text="${proj.nome()}">Projeto</option>
+              </select>
+            </div>
+          </div>
+
+          
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-line">
+            <a th:href="@{/tarefas}"
+               class="rounded-full border border-line px-6 py-2.5 text-sm font-semibold text-slate-600 hover:bg-purple-50 transition">
+              Cancelar
+            </a>
+            <button type="submit"
+                    class="primary-button">
+              <i data-lucide="check" class="h-4 w-4"></i>
+              <span th:text="${modoEdicao} ? 'Salvar Alterações' : 'Criar Tarefa'">Criar Tarefa</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <footer class="pb-2 pt-1 text-center text-xs text-slate-400">IntelliPlan · Planeje com intenção, avance no seu ritmo.</footer>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+</body>
+</html>
