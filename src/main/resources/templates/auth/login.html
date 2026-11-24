@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliPlan | Entrar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/pages/modules.css}" href="/css/pages/modules.css">
+</head>
+<body>
+<main class="login-page">
+  <section class="login-visual" aria-label="Apresentação do IntelliPlan">
+    <div>
+      <h1>Planeje com intenção. Avance no seu ritmo.</h1>
+      <p>Organize tarefas, projetos, estudos, compromissos e hábitos em um só lugar.</p>
+    </div>
+  </section>
+  <section class="login-panel">
+    <div class="login-card">
+      <div class="login-brand"><i data-lucide="sparkles"></i><span>IntelliPlan</span></div>
+      <h2>Bem-vindo de volta</h2>
+      <p>Informe seus dados para acessar sua rotina.</p>
+      <form id="login-preview" data-validate>
+        <div class="form-field">
+          <label for="identificador">E-mail ou usuário</label>
+          <input id="identificador" name="identificador" type="text" required autocomplete="username" placeholder="nome@email.com">
+        </div>
+        <div class="form-field login-password-field">
+          <label for="senha">Senha</label>
+          <input id="senha" name="senha" type="password" required autocomplete="current-password" placeholder="Sua senha">
+        </div>
+        <button type="submit" class="primary-button"><i data-lucide="log-in"></i><span>Entrar</span></button>
+      </form>
+      <p class="login-note">O acesso definitivo ainda não está habilitado.</p>
+    </div>
+  </section>
+</main>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/pages/login.js}" src="/js/pages/login.js"></script>
+</body>
+</html>

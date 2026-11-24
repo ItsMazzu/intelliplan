@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliPlan | Estudos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/pages/modules.css}" href="/css/pages/modules.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+  <div th:replace="~{fragments/sidebar :: sidebar('estudos')}"></div>
+  <main class="module-main">
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+    <div class="module-content">
+      <div th:if="${mensagemSucesso}" class="feedback feedback-success"><i data-lucide="circle-check"></i><span th:text="${mensagemSucesso}"></span></div>
+      <div th:if="${mensagemErro}" class="feedback feedback-error"><i data-lucide="circle-alert"></i><span th:text="${mensagemErro}"></span></div>
+      <div class="page-heading">
+        <div><h1>Estudos</h1><p>Acompanhe matérias e conteúdos de aprendizagem.</p></div>
+        <a th:href="@{/estudos/nova}" class="primary-button"><i data-lucide="book-plus"></i><span>Nova matéria</span></a>
+      </div>
+
+      <section class="stats-grid">
+        <article class="stat-card"><div class="stat-icon"><i data-lucide="book-open"></i></div><div><strong th:text="${totalMaterias} ?: 0">0</strong><span>Matérias</span></div></article>
+        <article class="stat-card"><div class="stat-icon"><i data-lucide="library"></i></div><div><strong th:text="${totalConteudos} ?: 0">0</strong><span>Conteúdos</span></div></article>
+        <article class="stat-card"><div class="stat-icon"><i data-lucide="check-check"></i></div><div><strong th:text="${conteudosConcluidos} ?: 0">0</strong><span>Concluídos</span></div></article>
+        <article class="stat-card"><div class="stat-icon"><i data-lucide="chart-pie"></i></div><div><strong th:text="(${progressoGeral} ?: 0) + '%'">0%</strong><span>Progresso geral</span></div></article>
+      </section>
+
+      <section id="module-list" class="content-panel">
+        <div class="panel-heading"><h2><i data-lucide="book-marked"></i>Matérias</h2></div>
+        <div th:if="${#lists.isEmpty(materias)}" class="empty-state">
+          <div class="empty-state-icon"><i data-lucide="book-open"></i></div>
+          <h3>Nenhuma matéria cadastrada</h3>
+          <p>Adicione uma matéria e organize seus conteúdos de estudo.</p>
+          <a th:href="@{/estudos/nova}" class="primary-button"><i data-lucide="plus"></i><span>Criar matéria</span></a>
+        </div>
+        <div th:if="${!#lists.isEmpty(materias)}" class="data-list">
+          <article th:each="item : ${materiasProgresso}" class="data-row" th:attr="data-searchable=${item.materia.nome + ' ' + item.materia.descricao}">
+            <div class="row-main">
+              <div class="row-icon"><i data-lucide="book-marked"></i></div>
+              <div class="row-copy">
+                <strong th:text="${item.materia.nome}">Matéria</strong>
+                <p th:text="${item.materia.descricao} ?: 'Sem descrição'">Descrição</p>
+              </div>
+            </div>
+            <div class="row-actions">
+              <div class="progress-row">
+                <div class="progress-track"><span th:style="'width:' + ${item.progresso} + '%'"></span></div>
+                <small th:text="${item.progresso} + '%'">0%</small>
+              </div>
+              <a th:href="@{/estudos/{id}(id=${item.materia.id})}" class="icon-button" title="Conteúdos"><i data-lucide="eye"></i></a>
+              <a th:href="@{/estudos/{id}/editar(id=${item.materia.id})}" class="icon-button" title="Editar"><i data-lucide="pencil"></i></a>
+              <form th:action="@{/estudos/{id}/excluir(id=${item.materia.id})}" method="post">
+                <button type="submit" class="icon-button" data-confirm="Deseja excluir esta matéria?" title="Excluir"><i data-lucide="trash-2"></i></button>
+              </form>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+</body>
+</html>

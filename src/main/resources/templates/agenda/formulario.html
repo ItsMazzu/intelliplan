@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${modoEdicao} ? 'IntelliPlan | Editar Compromisso' : 'IntelliPlan | Novo Compromisso'">IntelliPlan | Agenda</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/pages/modules.css}" href="/css/pages/modules.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+  <div th:replace="~{fragments/sidebar :: sidebar('agenda')}"></div>
+  <main class="module-main">
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+    <div class="module-content">
+      <div th:if="${mensagemErro}" class="feedback feedback-error"><i data-lucide="circle-alert"></i><span th:text="${mensagemErro}"></span></div>
+      <div class="page-heading"><div><h1 th:text="${modoEdicao} ? 'Editar compromisso' : 'Novo compromisso'">Compromisso</h1><p>Defina título, período e localização.</p></div></div>
+      <section class="content-panel form-panel">
+        <div class="panel-heading"><h2><i data-lucide="calendar-plus"></i>Dados do compromisso</h2></div>
+        <form th:action="${modoEdicao} ? @{/agenda/{id}/editar(id=${compromissoId})} : @{/agenda}"
+              th:object="${compromissoForm}" method="post" data-validate class="form-body">
+          <div class="form-grid">
+            <div class="form-field full">
+              <label for="titulo">Título *</label>
+              <input id="titulo" th:field="*{titulo}" required maxlength="300" placeholder="Título do compromisso">
+              <p th:if="${#fields.hasErrors('titulo')}" th:errors="*{titulo}" class="validation-error"></p>
+            </div>
+            <div class="form-field full">
+              <label for="descricao">Descrição</label>
+              <textarea id="descricao" th:field="*{descricao}" placeholder="Detalhes adicionais"></textarea>
+            </div>
+            <div class="form-field">
+              <label for="dataHoraInicio">Início *</label>
+              <input id="dataHoraInicio" type="datetime-local" th:field="*{dataHoraInicio}" required>
+              <p th:if="${#fields.hasErrors('dataHoraInicio')}" th:errors="*{dataHoraInicio}" class="validation-error"></p>
+            </div>
+            <div class="form-field">
+              <label for="dataHoraFim">Término</label>
+              <input id="dataHoraFim" type="datetime-local" th:field="*{dataHoraFim}">
+              <p th:if="${#fields.hasErrors('dataHoraFim')}" th:errors="*{dataHoraFim}" class="validation-error"></p>
+            </div>
+            <div class="form-field full">
+              <label for="local">Local</label>
+              <input id="local" th:field="*{local}" maxlength="300" placeholder="Local ou link">
+            </div>
+          </div>
+          <div class="form-actions">
+            <a th:href="@{/agenda}" class="secondary-button">Cancelar</a>
+            <button type="submit" class="primary-button"><i data-lucide="check"></i><span th:text="${modoEdicao} ? 'Salvar alterações' : 'Criar compromisso'"></span></button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+</body>
+</html>

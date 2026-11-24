@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<header th:fragment="topbar" class="topbar sticky top-0 z-20 flex items-center justify-between gap-3 px-5 py-4 md:px-8">
+  <div class="relative w-full max-w-md">
+    <i data-lucide="search" class="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-purple-400"></i>
+    <input type="search"
+           th:attr="data-search-target=${searchTarget != null ? searchTarget : '#module-list'}"
+           th:placeholder="${searchPlaceholder != null ? searchPlaceholder : 'Buscar...'}"
+           class="search-input w-full rounded-full py-3 pl-11 pr-4 text-sm outline-none">
+  </div>
+  <div class="flex items-center gap-3">
+    <button class="icon-button" type="button" aria-label="Notificações">
+      <i data-lucide="bell"></i>
+    </button>
+    <div class="hidden h-8 border-l border-purple-100 sm:block"></div>
+    <div class="flex items-center gap-2 rounded-full px-2 py-1">
+      <div class="avatar avatar-small" th:text="${usuarioIniciais} ?: 'U'">U</div>
+      <span class="hidden text-sm font-semibold sm:inline" th:text="${usuarioNome} ?: 'Usuário'">Usuário</span>
+    </div>
+  </div>
+</header>
+
+</body>
+</html>

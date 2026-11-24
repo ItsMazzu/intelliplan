@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="'IntelliPlan | ' + ${projeto.nome}">IntelliPlan | Projeto</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/pages/modules.css}" href="/css/pages/modules.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+  <div th:replace="~{fragments/sidebar :: sidebar('projetos')}"></div>
+  <main class="module-main">
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+    <div class="module-content">
+      <div class="page-heading">
+        <div><h1 th:text="${projeto.nome}">Projeto</h1><p>Detalhes e tarefas relacionadas.</p></div>
+        <div class="row-actions">
+          <a th:href="@{/projetos}" class="secondary-button"><i data-lucide="arrow-left"></i><span>Voltar</span></a>
+          <a th:href="@{/projetos/{id}/editar(id=${projeto.id})}" class="primary-button"><i data-lucide="pencil"></i><span>Editar</span></a>
+        </div>
+      </div>
+      <div class="detail-grid">
+        <section>
+          <div class="detail-hero">
+            <h2 th:text="${projeto.nome}">Projeto</h2>
+            <p th:text="${projeto.descricao} ?: 'Sem descrição cadastrada.'"></p>
+          </div>
+          <section class="content-panel detail-tasks">
+            <div class="panel-heading"><h2><i data-lucide="list-checks"></i>Tarefas relacionadas</h2></div>
+            <div th:if="${#lists.isEmpty(tarefas)}" class="empty-state">
+              <div class="empty-state-icon"><i data-lucide="check-circle"></i></div>
+              <h3>Nenhuma tarefa vinculada</h3>
+              <p>As tarefas deste projeto aparecerão aqui.</p>
+            </div>
+            <div th:if="${!#lists.isEmpty(tarefas)}" class="data-list">
+              <article th:each="tarefa : ${tarefas}" class="data-row">
+                <div class="row-main">
+                  <div class="row-icon"><i data-lucide="square-check-big"></i></div>
+                  <div class="row-copy"><strong th:text="${tarefa.titulo}">Tarefa</strong><p th:text="${tarefa.descricao} ?: 'Sem descrição'"></p></div>
+                </div>
+                <span th:if="${tarefa.status.name() == 'CONCLUIDA'}" class="badge badge-green">Concluída</span>
+                <span th:if="${tarefa.status.name() == 'PENDENTE'}" class="badge badge-violet">Pendente</span>
+                <span th:if="${tarefa.status.name() == 'EM_ANDAMENTO'}" class="badge badge-blue">Em andamento</span>
+                <span th:if="${tarefa.status.name() == 'CANCELADA'}" class="badge badge-slate">Cancelada</span>
+              </article>
+            </div>
+          </section>
+        </section>
+        <aside class="content-panel">
+          <div class="panel-heading"><h3><i data-lucide="chart-pie"></i>Progresso</h3></div>
+          <div class="form-body">
+            <div class="progress-row">
+              <div class="progress-track"><span th:style="'width:' + ${progressoProjeto} + '%'"></span></div>
+              <strong th:text="${progressoProjeto} + '%'">0%</strong>
+            </div>
+            <p class="detail-facts">
+              Status: <strong th:text="${projeto.status}"></strong>
+            </p>
+            <p th:if="${projeto.dataInicio}" class="detail-facts">
+              Início: <strong th:text="${#temporals.format(projeto.dataInicio, 'dd/MM/yyyy')}"></strong>
+            </p>
+            <p th:if="${projeto.dataConclusao}" class="detail-facts">
+              Conclusão: <strong th:text="${#temporals.format(projeto.dataConclusao, 'dd/MM/yyyy')}"></strong>
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+</body>
+</html>

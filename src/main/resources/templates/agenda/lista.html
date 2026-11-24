@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliPlan | Agenda</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/pages/modules.css}" href="/css/pages/modules.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+  <div th:replace="~{fragments/sidebar :: sidebar('agenda')}"></div>
+  <main class="module-main">
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+    <div class="module-content">
+      <div th:if="${mensagemSucesso}" class="feedback feedback-success"><i data-lucide="circle-check"></i><span th:text="${mensagemSucesso}"></span></div>
+      <div th:if="${mensagemErro}" class="feedback feedback-error"><i data-lucide="circle-alert"></i><span th:text="${mensagemErro}"></span></div>
+      <div class="page-heading">
+        <div><h1>Agenda</h1><p>Visualize compromissos e organize seus horários.</p></div>
+        <a th:href="@{/agenda/novo}" th:attr="data-new-appointment=@{/agenda/novo}" class="primary-button"><i data-lucide="calendar-plus"></i><span>Novo compromisso</span></a>
+      </div>
+
+      <section class="calendar-layout">
+        <div class="content-panel">
+          <div class="form-body">
+            <div class="calendar-header">
+              <a th:href="@{/agenda(ano=${mesAnterior.year},mes=${mesAnterior.monthValue})}" class="icon-button" title="Mês anterior"><i data-lucide="chevron-left"></i></a>
+              <strong th:text="${mesTitulo}">Mês</strong>
+              <a th:href="@{/agenda(ano=${mesProximo.year},mes=${mesProximo.monthValue})}" class="icon-button" title="Próximo mês"><i data-lucide="chevron-right"></i></a>
+            </div>
+            <div class="calendar-week">
+              <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+            </div>
+            <div class="calendar-grid">
+              <button th:each="dia : ${diasCalendario}" type="button"
+                      th:attr="data-date=${dia.data}"
+                      th:class="'calendar-day' + (${dia.fora} ? ' outside' : '') + (${dia.hoje} ? ' today' : '')">
+                <span class="calendar-number" th:text="${dia.numero}">1</span>
+                <span th:each="evento : ${dia.eventos}" class="calendar-event" th:text="${evento.titulo}">Evento</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="content-panel">
+          <div class="panel-heading"><h3><i data-lucide="calendar-days"></i>Compromissos</h3><span class="badge badge-violet" th:text="${totalCompromissos} ?: 0">0</span></div>
+          <div th:if="${#lists.isEmpty(compromissos)}" class="empty-state">
+            <div class="empty-state-icon"><i data-lucide="calendar-x"></i></div>
+            <h3>Agenda vazia</h3>
+            <p>Nenhum compromisso cadastrado neste período.</p>
+          </div>
+          <div th:if="${!#lists.isEmpty(compromissos)}" class="data-list">
+            <article th:each="compromisso : ${compromissos}" class="data-row">
+              <div class="row-main">
+                <div class="row-icon"><i data-lucide="calendar-clock"></i></div>
+                <div class="row-copy">
+                  <strong th:text="${compromisso.titulo}">Compromisso</strong>
+                  <p th:text="${#temporals.format(compromisso.dataHoraInicio, 'dd/MM/yyyy HH:mm')}"></p>
+                  <p th:if="${compromisso.dataHoraFim}" th:text="'Até ' + ${#temporals.format(compromisso.dataHoraFim, 'dd/MM/yyyy HH:mm')}"></p>
+                  <p th:if="${compromisso.local}" th:text="${compromisso.local}"></p>
+                </div>
+              </div>
+              <div class="row-actions">
+                <a th:href="@{/agenda/{id}/editar(id=${compromisso.id})}" class="icon-button" title="Editar"><i data-lucide="pencil"></i></a>
+                <form th:action="@{/agenda/{id}/excluir(id=${compromisso.id})}" method="post">
+                  <button type="submit" class="icon-button" data-confirm="Deseja excluir este compromisso?" title="Excluir"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </article>
+          </div>
+        </aside>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/pages/agenda.js}" src="/js/pages/agenda.js"></script>
+</body>
+</html>

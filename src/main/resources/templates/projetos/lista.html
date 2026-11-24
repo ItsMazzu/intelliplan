@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliPlan | Projetos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/pages/modules.css}" href="/css/pages/modules.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+  <div th:replace="~{fragments/sidebar :: sidebar('projetos')}"></div>
+  <main class="module-main">
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+    <div class="module-content">
+      <div th:if="${mensagemSucesso}" class="feedback feedback-success"><i data-lucide="circle-check"></i><span th:text="${mensagemSucesso}"></span></div>
+      <div th:if="${mensagemErro}" class="feedback feedback-error"><i data-lucide="circle-alert"></i><span th:text="${mensagemErro}"></span></div>
+
+      <div class="page-heading">
+        <div><h1>Projetos</h1><p>Organize objetivos, prazos e tarefas relacionadas.</p></div>
+        <a th:href="@{/projetos/novo}" class="primary-button"><i data-lucide="folder-plus"></i><span>Novo projeto</span></a>
+      </div>
+
+      <section class="stats-grid">
+        <article class="stat-card"><div class="stat-icon"><i data-lucide="folders"></i></div><div><strong th:text="${totalProjetos} ?: 0">0</strong><span>Projetos</span></div></article>
+        <article class="stat-card"><div class="stat-icon"><i data-lucide="timer"></i></div><div><strong th:text="${totalPlanejados} ?: 0">0</strong><span>Planejados</span></div></article>
+        <article class="stat-card"><div class="stat-icon"><i data-lucide="loader"></i></div><div><strong th:text="${totalAndamento} ?: 0">0</strong><span>Em andamento</span></div></article>
+        <article class="stat-card"><div class="stat-icon"><i data-lucide="circle-check"></i></div><div><strong th:text="${totalConcluidos} ?: 0">0</strong><span>Concluídos</span></div></article>
+      </section>
+
+      <form th:action="@{/projetos}" method="get" class="toolbar">
+        <div class="toolbar-field">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="" th:selected="${statusSelecionado == null}">Todos os status</option>
+            <option th:each="status : ${statusOpcoes}" th:value="${status}" th:text="${status}" th:selected="${statusSelecionado == status}"></option>
+          </select>
+        </div>
+        <button type="submit" class="primary-button"><i data-lucide="filter"></i><span>Filtrar</span></button>
+        <a th:href="@{/projetos}" class="secondary-button">Limpar</a>
+      </form>
+
+      <section id="module-list" class="content-panel">
+        <div class="panel-heading">
+          <h2><i data-lucide="folder"></i>Todos os projetos</h2>
+          <span class="badge badge-violet" th:text="${#lists.size(projetos)} + ' projeto(s)'">0 projetos</span>
+        </div>
+        <div th:if="${#lists.isEmpty(projetos)}" class="empty-state">
+          <div class="empty-state-icon"><i data-lucide="folder-plus"></i></div>
+          <h3>Nenhum projeto encontrado</h3>
+          <p>Crie um projeto para organizar tarefas e acompanhar o andamento.</p>
+          <a th:href="@{/projetos/novo}" class="primary-button"><i data-lucide="plus"></i><span>Criar projeto</span></a>
+        </div>
+        <div th:if="${!#lists.isEmpty(projetos)}" class="data-list">
+          <article th:each="projeto : ${projetos}" class="data-row" th:attr="data-searchable=${projeto.nome + ' ' + projeto.descricao}">
+            <div class="row-main">
+              <div class="row-icon"><i data-lucide="folder-kanban"></i></div>
+              <div class="row-copy">
+                <strong th:text="${projeto.nome}">Projeto</strong>
+                <p th:text="${projeto.descricao} ?: 'Sem descrição'">Descrição</p>
+                <p th:if="${projeto.dataConclusao}">Conclusão prevista: <span th:text="${#temporals.format(projeto.dataConclusao, 'dd/MM/yyyy')}"></span></p>
+              </div>
+            </div>
+            <div class="row-actions">
+              <span th:if="${projeto.status.name() == 'PLANEJADO'}" class="badge badge-slate">Planejado</span>
+              <span th:if="${projeto.status.name() == 'EM_ANDAMENTO'}" class="badge badge-blue">Em andamento</span>
+              <span th:if="${projeto.status.name() == 'CONCLUIDO'}" class="badge badge-green">Concluído</span>
+              <span th:if="${projeto.status.name() == 'CANCELADO'}" class="badge badge-danger">Cancelado</span>
+              <a th:href="@{/projetos/{id}(id=${projeto.id})}" class="icon-button" title="Detalhes"><i data-lucide="eye"></i></a>
+              <a th:href="@{/projetos/{id}/editar(id=${projeto.id})}" class="icon-button" title="Editar"><i data-lucide="pencil"></i></a>
+              <form th:action="@{/projetos/{id}/excluir(id=${projeto.id})}" method="post">
+                <button type="submit" class="icon-button" data-confirm="Deseja excluir este projeto?" title="Excluir"><i data-lucide="trash-2"></i></button>
+              </form>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+</body>
+</html>

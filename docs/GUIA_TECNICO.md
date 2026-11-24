@@ -6,7 +6,7 @@ Este documento apresenta a especificação técnica detalhada da arquitetura, do
 
 ## 1. Visão Geral e Estilo Arquitetural
 
-O IntelliPlan é estruturado como um monolito modular baseado em **Java 21** e **Spring Boot 4.1.2**, utilizando persistência relacional com **PostgreSQL** e **Spring Data JPA / Hibernate**, empacotado no formato **WAR (Web Application Archive)**.
+O IntelliPlan é estruturado como um monolito modular baseado em **Java 21** e **Spring Boot 4.1.2**, utilizando persistência relacional com **PostgreSQL 18** e **Spring Data JPA / Hibernate**, empacotado no formato **WAR (Web Application Archive)**.
 
 A aplicação atende simultaneamente a dois canais de consumo:
 1. **Interface Web Server-Side:** Renderizada com **Thymeleaf**, **Tailwind CSS** (via CDN) e **JavaScript vanilla** para interação no navegador.

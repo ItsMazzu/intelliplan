@@ -1,6 +1,7 @@
 package com.planner.dashboard.controller;
 
 import com.planner.common.context.UsuarioContextService;
+import com.planner.common.exception.ResourceNotFoundException;
 import com.planner.dashboard.dto.DashboardDadosDTO;
 import com.planner.dashboard.service.DashboardService;
 import com.planner.tarefa.service.TarefaService;
@@ -9,7 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Optional;
 
 @Controller
 public class DashboardController {
@@ -50,9 +53,18 @@ public class DashboardController {
 
     @PostMapping("/tarefas/{id}/concluir")
     public String alternarConclusaoTarefa(@PathVariable Long id,
-                                          @RequestHeader(value = "Referer", required = false) String referer) {
-        usuarioContextService.obterUsuarioIdOpcional().ifPresent(usuarioId ->
-                tarefaService.alternarConclusao(usuarioId, id));
-        return (referer != null && !referer.isBlank()) ? "redirect:" + referer : "redirect:/";
+                                          RedirectAttributes redirectAttributes) {
+        Optional<Long> usuarioIdOpt = usuarioContextService.obterUsuarioIdOpcional();
+        if (usuarioIdOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário de desenvolvimento não configurado.");
+            return "redirect:/tarefas";
+        }
+        try {
+            tarefaService.alternarConclusao(usuarioIdOpt.get(), id);
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Status da tarefa atualizado!");
+        } catch (ResourceNotFoundException ex) {
+            redirectAttributes.addFlashAttribute("mensagemErro", ex.getMessage());
+        }
+        return "redirect:/tarefas";
     }
 }

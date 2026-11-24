@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${modoEdicao} ? 'IntelliPlan | Editar Projeto' : 'IntelliPlan | Novo Projeto'">IntelliPlan | Projeto</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/pages/modules.css}" href="/css/pages/modules.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+  <div th:replace="~{fragments/sidebar :: sidebar('projetos')}"></div>
+  <main class="module-main">
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+    <div class="module-content">
+      <div th:if="${mensagemErro}" class="feedback feedback-error"><i data-lucide="circle-alert"></i><span th:text="${mensagemErro}"></span></div>
+      <div class="page-heading">
+        <div><h1 th:text="${modoEdicao} ? 'Editar projeto' : 'Novo projeto'">Projeto</h1><p>Defina nome, descrição, status e período.</p></div>
+      </div>
+      <section class="content-panel form-panel">
+        <div class="panel-heading"><h2><i data-lucide="folder-kanban"></i><span th:text="${modoEdicao} ? 'Dados do projeto' : 'Cadastrar projeto'"></span></h2></div>
+        <form th:action="${modoEdicao} ? @{/projetos/{id}/editar(id=${projetoId})} : @{/projetos}"
+              th:object="${projetoForm}" method="post" data-validate class="form-body">
+          <div class="form-grid">
+            <div class="form-field full">
+              <label for="nome">Nome *</label>
+              <input id="nome" th:field="*{nome}" required maxlength="200" placeholder="Nome do projeto">
+              <p th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}" class="validation-error"></p>
+            </div>
+            <div class="form-field full">
+              <label for="descricao">Descrição</label>
+              <textarea id="descricao" th:field="*{descricao}" placeholder="Descreva o objetivo do projeto"></textarea>
+            </div>
+            <div class="form-field">
+              <label for="status">Status *</label>
+              <select id="status" th:field="*{status}" required>
+                <option th:each="status : ${statusOpcoes}" th:value="${status}" th:text="${status}"></option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="dataInicio">Data de início</label>
+              <input id="dataInicio" type="date" th:field="*{dataInicio}">
+            </div>
+            <div class="form-field">
+              <label for="dataConclusao">Data de conclusão</label>
+              <input id="dataConclusao" type="date" th:field="*{dataConclusao}">
+            </div>
+          </div>
+          <div class="form-actions">
+            <a th:href="@{/projetos}" class="secondary-button">Cancelar</a>
+            <button type="submit" class="primary-button"><i data-lucide="check"></i><span th:text="${modoEdicao} ? 'Salvar alterações' : 'Criar projeto'"></span></button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+</body>
+</html>
