@@ -16,7 +16,8 @@ A aplicação atende simultaneamente a dois canais de consumo:
 
 - **Injeção de Dependências Explícita:** Todos os componentes do Spring utilizam injeção via construtor, sem uso de anotações `@Autowired` em campos ou setters.
 - **Sem Lombok:** Todas as entidades possuem construtores, getters e setters explícitos; todos os DTOs utilizam **Java Records**.
-- **Isolamento de Usuário por Padrão:** As consultas e mutações em entidades associadas a usuários sempre validam o identificador do usuário corrente, prevenindo acesso cruzado (IDOR).
+- **Isolamento de Dados nos Serviços:** As consultas e mutações em entidades associadas a usuários validam o identificador do proprietário. No estado atual, o identificador vem de uma configuração local fixa, não de uma identidade autenticada; isso não oferece isolamento seguro entre visitantes.
+- **Segurança Web em Desenvolvimento:** O `SecurityConfig` permite todas as requisições e desabilita CSRF. A aplicação não possui autenticação ativa e não deve ser exposta publicamente nesse estado.
 - **Tratamento de Exceções Padronizado:** Erros de validação, integridade, regras de negócio e recursos não encontrados são mapeados pelo `GlobalExceptionHandler` no formato RFC 7807 (`ProblemDetail`).
 - **Resiliência em Integrações:** Falhas em serviços externos (ex.: BrasilAPI) são capturadas de forma defensiva com logging de advertência, retornando fallbacks sem interromper o fluxo da aplicação.
 
@@ -68,7 +69,7 @@ com.planner
 │   ├── repository      # ProjetoRepository
 │   └── service         # ProjetoService
 ├── tarefa
-│   ├── controller      # TarefaController (REST)
+│   ├── controller      # TarefaViewController (MVC/Thymeleaf)
 │   ├── dto             # TarefaRequestDTO, TarefaResponseDTO
 │   ├── entity          # Tarefa (JPA)
 │   ├── repository      # TarefaRepository
@@ -85,22 +86,21 @@ com.planner
 
 ## 3. Ciclo de Vida de uma Requisição
 
-### 3.1 Requisição REST (Exemplo: Criação de Tarefa)
+### 3.1 Requisição REST (Exemplo: Criação de Compromisso)
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Cliente as Cliente HTTP (Frontend / Postman)
-    participant Ctrl as TarefaController
+    participant Ctrl as CompromissoController
     participant Ctx as UsuarioContextService
-    participant Svc as TarefaService
+    participant Svc as CompromissoService
     participant UsrSvc as UsuarioService
-    participant ProjSvc as ProjetoService
-    participant Repo as TarefaRepository
+    participant Repo as CompromissoRepository
     participant DB as PostgreSQL
     participant Exc as GlobalExceptionHandler
 
-    Cliente->>Ctrl: POST /api/v1/tarefas (TarefaRequestDTO)
+    Cliente->>Ctrl: POST /api/v1/compromissos (CompromissoRequestDTO)
     Note over Ctrl: Jakarta Bean Validation valida campos
     alt Dados inválidos (@Valid falha)
         Ctrl-->>Exc: MethodArgumentNotValidException
@@ -111,16 +111,12 @@ sequenceDiagram
         Ctrl->>Svc: criar(usuarioId, dto)
         Svc->>UsrSvc: buscarEntidadePorId(usuarioId)
         UsrSvc-->>Svc: Usuario
-        opt dto.projetoId() != null
-            Svc->>ProjSvc: buscarProjetoDoUsuario(usuarioId, projetoId)
-            ProjSvc-->>Svc: Projeto (garante que pertence ao usuário)
-        end
-        Svc->>Repo: save(Tarefa)
-        Repo->>DB: INSERT INTO tarefas ...
-        DB-->>Repo: Tarefa persistida
-        Repo-->>Svc: Tarefa
-        Svc-->>Ctrl: TarefaResponseDTO
-        Ctrl-->>Cliente: 201 Created + Header Location (/api/v1/tarefas/{id})
+        Svc->>Repo: save(Compromisso)
+        Repo->>DB: INSERT INTO compromissos ...
+        DB-->>Repo: Compromisso persistido
+        Repo-->>Svc: Compromisso
+        Svc-->>Ctrl: CompromissoResponseDTO
+        Ctrl-->>Cliente: 201 Created + Header Location (/api/v1/compromissos/{id})
     end
 ```
 
@@ -182,12 +178,12 @@ O modelo de dados é composto por 8 entidades relacionais com integridade refere
 
 ## 5. Resolução de Contexto do Usuário (`UsuarioContextService`)
 
-Para o estágio atual de desenvolvimento local (sem tela de login ou tokens JWT ativados), a identificação do usuário em requisições REST e na interface web é gerenciada de forma centralizada pelo `UsuarioContextService`:
+Para o estágio atual de desenvolvimento local (sem autenticação por sessão ou tokens JWT), a identificação usada pelas operações REST e pela interface web é gerenciada pelo `UsuarioContextService`. Ela é obtida de `app.dev.usuario-id`; não representa o usuário autenticado:
 
 ```java
 @Component
 public class UsuarioContextService {
-    private final Long devUsuarioId;
+    private final String devUsuarioIdConfigurado;
     private final UsuarioRepository usuarioRepository;
     // Injeção de app.dev.usuario-id e UsuarioRepository via construtor
 }
@@ -209,6 +205,10 @@ public class UsuarioContextService {
    - Utilizado pelo `DashboardService` para renderização defensiva com valores padrão sem estourar exceções na interface.
 4. **Isenção de Endpoints Públicos:**
    - O cadastro de usuários (`POST /api/v1/usuarios`) não injeta nem consome o `UsuarioContextService`, permitindo o bootstrapping inicial de contas sem contexto prévio.
+
+### Configuração atual do Spring Security
+
+O `SecurityConfig` disponibiliza `BCryptPasswordEncoder`, mas sua cadeia de filtros atualmente desabilita CSRF e aplica `permitAll()` a todas as requisições. Não há login, logout ou autorização por usuário. O endpoint público de cadastro não restringe a criação de contas. Esses comportamentos são exclusivos do estágio de desenvolvimento e não devem ser considerados adequados para implantação pública ou produção.
 
 ---
 
@@ -242,7 +242,7 @@ O pacote `com.planner.integracao.feriados` provê sincronização de feriados na
 
 ## 7. Mapeamento da API REST
 
-A API REST do IntelliPlan está integralmente mapeada sob `/api/v1` com as seguintes rotas e operações:
+A API REST disponível está mapeada sob `/api/v1` com as seguintes rotas e operações. O módulo de tarefas não possui controller REST no estado atual; suas páginas usam rotas MVC documentadas na seção 9.
 
 | Módulo | Método | Rota | Descrição | Códigos de Resposta |
 |---|---|---|---|---|
@@ -254,12 +254,6 @@ A API REST do IntelliPlan está integralmente mapeada sob `/api/v1` com as segui
 | | `GET` | `/api/v1/projetos/{id}` | Busca de projeto por ID | 200, 404 |
 | | `PUT` | `/api/v1/projetos/{id}` | Atualização de projeto | 200, 400, 404 |
 | | `DELETE` | `/api/v1/projetos/{id}` | Exclusão de projeto | 204, 404 |
-| **Tarefas** | `POST` | `/api/v1/tarefas` | Criação de tarefa | 201, 400, 404 |
-| | `GET` | `/api/v1/tarefas` | Listagem com filtros opcionais (`status`, `projetoId`, período `inicio`/`fim`) | 200, 400 |
-| | `GET` | `/api/v1/tarefas/{id}` | Busca de tarefa por ID | 200, 404 |
-| | `PUT` | `/api/v1/tarefas/{id}` | Atualização de tarefa | 200, 400, 404 |
-| | `PATCH` | `/api/v1/tarefas/{id}/concluir` | Alterna status entre concluída e pendente | 200, 404 |
-| | `DELETE` | `/api/v1/tarefas/{id}` | Exclusão de tarefa | 204, 404 |
 | **Matérias** | `POST` | `/api/v1/materias` | Criação de matéria | 201, 400 |
 | | `GET` | `/api/v1/materias` | Listagem de matérias do usuário | 200 |
 | | `GET` | `/api/v1/materias/{id}` | Busca de matéria por ID | 200, 404 |
@@ -345,4 +339,6 @@ O `DashboardController` atende às rotas `GET /` e `GET /dashboard`, alimentando
 | `projetosAtivos` | `List<ProjetoItemDTO>` | Projetos em andamento ou planejados com nome, descrição e progresso individual baseado em suas tarefas. |
 | `materias` | `List<MateriaItemDTO>` | Matérias cadastradas com conteúdo em andamento atual e percentual de progresso concluído. |
 
-Além do carregamento da tela, o controller disponibiliza a rota `POST /tarefas/{id}/concluir`, permitindo que os formulários inline de checkboxes da tela alternem dinamicamente o status da tarefa no banco e redirecionem de volta ao dashboard.
+Além do carregamento da tela, o controller disponibiliza a rota `POST /tarefas/{id}/concluir`, permitindo que os formulários inline de checkboxes da tela alternem o status da tarefa e retornem ao endereço de referência quando disponível. As rotas MVC de tarefas incluem `GET /tarefas`, `GET /tarefas/nova`, `POST /tarefas`, `GET /tarefas/{id}/editar`, `POST /tarefas/{id}/editar` e `POST /tarefas/{id}/excluir`.
+
+O formulário de tarefa usa uma data HTML (`input type="date"`) vinculada a `LocalDate`, e os filtros de período convertem valores ISO de data (`yyyy-MM-dd`). As páginas disponíveis neste módulo são de listagem e formulário; isso não implica que existam páginas de interface para os módulos cujos links aparecem na navegação.

@@ -30,6 +30,16 @@ A tabela abaixo correlaciona os registros do histórico de versionamento às fas
 | `50f614d` | Italo Mazzucatto | 2026-11-18 | `feat: add initial dashboard setup and frontend integration` | Criação do `DashboardController` mapeando a rota `/` e configuração de desenvolvimento do Spring Security (`SecurityConfig` com BCrypt e `permitAll()`). |
 | `7c87662` | Italo Mazzucatto | 2026-11-18 | `docs: update README with dashboard implementation status` | Atualização do `README.md` refletindo a disponibilidade visual do dashboard. |
 | `6df0016` | Italo Mazzucatto | 2026-11-22 | `feat: add REST controllers and global exception handling` | Implementação de todos os 8 Controllers REST sob `/api/v1`, anotações OpenAPI/Swagger e manipulador global `GlobalExceptionHandler` (RFC 7807). |
+| `25eb2e5` | Italo Mazzucatto | 2026-11-22 | `fix: stabilize backend queries and integrations` | Estabilização das consultas e integrações do backend. |
+| `b359fe5` | Italo Mazzucatto | 2026-11-22 | `chore: checkpoint backend implementation` | Registro de checkpoint da implementação do backend. |
+| `8ce4634` | Italo Mazzucatto | 2026-11-22 | `merge: integrate main into backend stabilization` | Integração das alterações de `main` na estabilização do backend. |
+| `263ca60` | Italo Mazzucatto | 2026-11-22 | `Merge backend stabilization into main` | Integração da estabilização do backend em `main`. |
+| `8ba28c3` | Laís Campos | 2026-11-24 | `Refactor TarefaController to TarefaViewController` | Separação do fluxo de tarefas em controller MVC para páginas Thymeleaf; o módulo não possui controller REST no estado atual. |
+| `a784b4f` | Laís Campos | 2026-11-24 | `Create tarefas.html template for task management` | Inclusão da página Thymeleaf para listagem e gerenciamento de tarefas. |
+| `9746802` | Laís Campos | 2026-11-24 | `Update tarefas.html` | Ajustes na página de tarefas. |
+| `9ebd6ec` | Laís Campos | 2026-11-24 | `Create task form in formulario.html` | Inclusão do formulário Thymeleaf de criação e edição de tarefas. |
+| `00de9ff` | Laís Campos | 2026-11-24 | `Refactor sidebar structure and navigation links` | Refatoração estrutural da navegação lateral da interface. |
+| `7ae89bd` | Laís Campos | 2026-11-24 | `Add referer header handling to task completion` | Retorno à página de origem, quando disponível, após alternar a conclusão de uma tarefa. |
 
 ---
 
@@ -93,7 +103,15 @@ A tabela abaixo correlaciona os registros do histórico de versionamento às fas
      - Foram populadas todas as 16 variáveis demandadas pelo Thymeleaf (`usuarioNome`, `primeiroNome`, contadores, listas e métricas de progresso).
      - Integração do calendário mensal com os feriados nacionais obtidos da BrasilAPI e os compromissos do usuário.
      - Implementação de tratamento defensivo: em caso de banco de dados vazio ou usuário sem dados cadastrados, a aplicação exibe a tela com valores zerados e mensagens amigáveis sem lançar erro 500.
-     - Adição do endpoint `POST /tarefas/{id}/concluir` e `PATCH /api/v1/tarefas/{id}/concluir` para suporte à alternância de status de tarefas diretamente na tela.
+     - Adição do endpoint MVC `POST /tarefas/{id}/concluir` para suporte à alternância de status diretamente na tela. A rota REST de tarefas foi removida posteriormente quando o módulo passou a usar controller MVC.
+
+### Fase 7: Interface MVC para Tarefas
+- **Objetivo:** Disponibilizar o gerenciamento de tarefas na interface Thymeleaf.
+- **Ações registradas no histórico Git:**
+  - Substituição do controller REST de tarefas por `TarefaViewController`, com listagem, filtros, criação, edição e exclusão via MVC.
+  - Inclusão dos templates de listagem e formulário, além de ajustes na navegação lateral.
+  - Retorno à página de referência após alternar o status de conclusão.
+- **Estado de segurança:** a aplicação ainda usa `app.dev.usuario-id` como contexto local. O `SecurityConfig` permite todas as requisições e desabilita CSRF; não há autenticação ativa. A configuração atual é de desenvolvimento e não deve ser exposta publicamente.
 
 ---
 

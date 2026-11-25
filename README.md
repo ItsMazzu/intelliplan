@@ -12,7 +12,7 @@ A proposta é oferecer uma alternativa estruturada às ferramentas tradicionais 
 
 O IntelliPlan surgiu da proposta de desenvolver uma plataforma completa que auxilie na organização e no acompanhamento da rotina pessoal e acadêmica.
 
-A aplicação reúne recursos de planejamento e gerenciamento em uma arquitetura modular por domínio, combinando uma interface web server-side moderna (Thymeleaf, Tailwind CSS, Lucide Icons) com uma API RESTful completa e documentada (OpenAPI 3.0 / Swagger UI), persistência relacional com PostgreSQL e integração com serviços externos.
+A aplicação reúne recursos de planejamento e gerenciamento em uma arquitetura modular por domínio, combinando uma interface web server-side (Thymeleaf, Tailwind CSS, Lucide Icons) com endpoints REST documentados (OpenAPI / Swagger UI), persistência relacional com PostgreSQL e integração com serviços externos. A interface e a API disponíveis variam por módulo; tarefas, por exemplo, são gerenciadas por rotas MVC/Thymeleaf, não por uma API REST.
 
 ---
 
@@ -23,7 +23,7 @@ A aplicação está organizada nos seguintes módulos:
 | Módulo | Descrição | Status no Backend |
 |---|---|---|
 | **Dashboard** | Visão geral consolidada: métricas da semana, progresso geral, hábitos recentes, tarefas do dia, projetos ativos e calendário com compromissos e feriados nacionais. | **Concluído e Integrado** |
-| **Tarefas** | Criação, consulta, atualização, exclusão e alternância de status de tarefas com prioridades, datas de vencimento e vinculação opcional a projetos. | **Concluído (REST + Service)** |
+| **Tarefas** | Criação, consulta, atualização, exclusão e alternância de status de tarefas com prioridades, datas de vencimento e vinculação opcional a projetos. | **Concluído (MVC/Thymeleaf + Service)** |
 | **Projetos** | Criação e acompanhamento de projetos com status, prazos e agregação de tarefas associadas. | **Concluído (REST + Service)** |
 | **Estudos** | Gerenciamento de disciplinas/matérias e acompanhamento de tópicos/conteúdos de estudo com percentuais de conclusão. | **Concluído (REST + Service)** |
 | **Agenda** | Gerenciamento de compromissos com horários de início e término, locais e consulta por períodos. | **Concluído (REST + Service)** |
@@ -40,7 +40,7 @@ A aplicação está organizada nos seguintes módulos:
 - **Spring Boot 4.1.2** — framework base para a arquitetura em camadas.
 - **Spring Data JPA & Hibernate** — persistência relacional com lazy loading e métodos de consulta derivados.
 - **Jakarta Bean Validation** — validação declarativa de dados de entrada via anotações nos records.
-- **Spring Security (desenvolvimento)** — disponibilização do bean `PasswordEncoder` (BCrypt) e liberação provisória de rotas durante a fase de construção.
+- **Spring Security (desenvolvimento)** — disponibilização do bean `PasswordEncoder` (BCrypt); atualmente, todas as rotas estão liberadas e a proteção CSRF está desabilitada. Não há autenticação ativa.
 - **Springdoc OpenAPI 3.2.0** — documentação padronizada e interface interativa Swagger UI.
 - **Apache Maven Wrapper (`mvnw`)** — automação de build e gerenciamento de dependências.
 
@@ -81,8 +81,8 @@ src/main/java/com/planner/
 ### Decisões Arquiteturais Relevantes
 
 1. **Sem Lombok:** Código explícito e transparente com getters, setters e construtores desenvolvidos manualmente nas entidades e uso nativo de **Java Records** para DTOs.
-2. **Isolamento de Dados por Usuário:** Todas as operações de leitura e mutação validam o ID do usuário proprietário, impedindo acesso indevido entre contas.
-3. **Resolução de Contexto Determinística:** O `UsuarioContextService` obtém o usuário atual através da propriedade configurável `app.dev.usuario-id` no `application.properties`, validando sua existência no banco.
+2. **Isolamento de Dados por Usuário:** As operações de leitura e mutação dos serviços validam o ID do usuário proprietário. No estado atual, porém, esse ID é um valor de desenvolvimento configurado localmente, não a identidade de uma sessão autenticada.
+3. **Resolução de Contexto de Desenvolvimento:** O `UsuarioContextService` obtém o usuário através da propriedade configurável `app.dev.usuario-id` no `application.properties`, validando sua existência no banco. Essa configuração não deve ser tratada como autenticação nem como isolamento seguro entre visitantes.
 4. **Tratamento Global de Erros (RFC 7807):** Respostas de erro uniformes via `GlobalExceptionHandler` utilizando `ProblemDetail` com campos `type`, `title`, `status`, `detail`, `timestamp` e `erros` (validações).
 5. **Dashboard Resiliente:** O `DashboardService` agrega dados de todos os módulos para alimentar a view Thymeleaf e trata cenários de banco de dados vazio com valores zerados seguros, prevenindo qualquer ocorrência de erro HTTP 500.
 
@@ -130,7 +130,9 @@ No arquivo `src/main/resources/application.properties`, configure o identificado
 app.dev.usuario-id=1
 ```
 
-> **Dica:** Ao executar a aplicação pela primeira vez com o banco vazio, crie seu primeiro usuário via requisição `POST /api/v1/usuarios`. Esse usuário receberá o ID `1` e será utilizado automaticamente nas operações e na visualização do dashboard.
+> **Dica:** Ao executar a aplicação pela primeira vez com o banco vazio, crie um usuário via `POST /api/v1/usuarios` e configure `app.dev.usuario-id` com o ID correspondente. A configuração padrão é `1`.
+
+> **Atenção — somente desenvolvimento:** o `SecurityConfig` atual permite todas as requisições e desabilita CSRF. O usuário de contexto é escolhido por configuração, não pelo Spring Security; além disso, o endpoint de criação de usuários é público. Não exponha esta configuração à Internet nem a utilize em produção.
 
 ### Passo 5: Compilar e Executar a Aplicação
 
@@ -184,18 +186,18 @@ http://localhost:8080/v3/api-docs
 | **Tratamento de Exceções** | Concluído | `GlobalExceptionHandler` mapeando exceções de domínio e validação para RFC 7807 (`ProblemDetail`). |
 | **Controllers REST (8 Controllers)** | Concluídos | Endpoints RESTful versionados sob `/api/v1/` com anotações OpenAPI. |
 | **Integração BrasilAPI** | Concluída | Client HTTP resiliente com timeouts para feriados nacionais e endpoint `/api/v1/feriados/{ano}`. |
-| **Contexto de Usuário Local** | Concluído | `UsuarioContextService` com resolução determinística via `app.dev.usuario-id`. |
+| **Contexto de Usuário Local** | Concluído para desenvolvimento | `UsuarioContextService` valida o ID fixo/configurado em `app.dev.usuario-id`; não representa uma sessão autenticada. |
 | **Dashboard com Dados Reais** | Concluído | Agregação completa de métricas, progresso e calendário sem erros em banco vazio. |
-| **Segurança Provisória** | Concluída | `SecurityConfig` com bean `BCryptPasswordEncoder` e rotas liberadas para desenvolvimento. |
-| **Autenticação Definitiva** | Planejada | Implementação futura de tela de login/logout, tokens JWT ou sessões autenticadas e proteção CSRF ativa. |
-| **Telas Frontend dos Demais Módulos** | Planejada | Implementação das interfaces visuais completas de cadastro e listagem para tarefas, projetos, estudos, agenda e hábitos. |
+| **Segurança Provisória** | Ativa apenas para desenvolvimento | `SecurityConfig` disponibiliza BCrypt, mas permite todas as rotas e desabilita CSRF; não há autenticação nem identidade por sessão. |
+| **Autenticação e segurança de produção** | Pendente | Login/logout, identidade autenticada, autorização por usuário e proteção CSRF precisam ser implementados antes de exposição pública. |
+| **Interface Web** | Parcial | Dashboard e fluxo de tarefas possuem templates; projetos, estudos, agenda e hábitos ainda não têm as páginas correspondentes implementadas. |
 
 ---
 
 ## 8. Documentação Complementar
 
-- [Guia Técnico de Arquitetura e Funcionamento](file:///c:/Users/italo/OneDrive/Desktop/Studies%20-%20Academics/Coding/Backend/Java/IntelliPlan/docs/GUIA_TECNICO.md) — Documentação exaustiva com diagramas de sequência, contratos de rotas, ciclo de vida de requisição e detalhamento de pacotes.
-- [Histórico Técnico de Desenvolvimento](file:///c:/Users/italo/OneDrive/Desktop/Studies%20-%20Academics/Coding/Backend/Java/IntelliPlan/docs/HISTORICO_TECNICO.md) — Análise detalhada dos commits Git, evolução das fases e problemas técnicos superados.
+- [Guia Técnico de Arquitetura e Funcionamento](docs/GUIA_TECNICO.md) — Arquitetura, contexto de desenvolvimento, contratos de rotas e ciclo de vida das requisições.
+- [Histórico Técnico de Desenvolvimento](docs/HISTORICO_TECNICO.md) — Evolução das fases e decisões técnicas registradas no histórico Git.
 
 ---
 
