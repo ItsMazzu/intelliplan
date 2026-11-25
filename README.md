@@ -74,6 +74,9 @@ A localização usa os serviços oficiais do IBGE apenas para dados geográficos
 ### Banco de Dados
 - **PostgreSQL** — sistema gerenciador relacional; o projeto não fixa uma versão mínima do servidor.
 
+### Ferramentas
+- **Antigravity IDE** - Ambiente de desenvolvimento com agente de IA integrado.
+- **VS Code + GitHub Copilot Fusion** - IDE utilizando da extensão de agentes de IA do GitHub. Nessa aplicação, o Fusion utilizou MAI Code 2 Flash e ChatGPT-6 Luna.
 ---
 
 ## 4. Arquitetura e Decisões de Design
