@@ -89,10 +89,9 @@ A tabela abaixo correlaciona os registros do histórico de versionamento às fas
 - **Ações Implementadas:**
   1. **Substituição da Estratégia de Contexto de Usuário:**
      - O mecanismo anterior utilizava leitura frágil de cabeçalho `X-Usuario-Id` e busca arbitrária pelo primeiro usuário do banco.
-     - Foi substituído pela propriedade determinística `app.dev.usuario-id` no `application.properties`.
-     - O `UsuarioContextService` agora valida se o ID existe no banco e lança `ResourceNotFoundException` caso não seja encontrado, ou `BusinessRuleException` se a propriedade estiver ausente.
-     - Fornecido o método seguro `obterUsuarioIdOpcional()` para desacoplamento defensivo.
-     - Endpoints públicos (como `POST /api/v1/usuarios`) foram preservados sem dependência de contexto.
+     - Foi substituído pela resolução do usuário autenticado pelo e-mail do principal do Spring Security.
+     - O `UsuarioContextService` consulta o usuário correspondente no repositório e não depende de identificadores fixos.
+     - O cadastro público por `POST /api/v1/usuarios` foi removido; a conta principal só pode ser criada pelo assistente de primeira execução.
   2. **Integração com a BrasilAPI:**
      - Criação do pacote `com.planner.integracao.feriados`.
      - Implementação de `BrasilApiClient` usando `RestClient` nativo do Spring com timeouts de 3s (conexão) e 5s (leitura).

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IntelliPlan | Tarefas</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -28,7 +28,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
 </head>
 <body class="min-h-screen bg-mist text-ink">
 <div class="min-h-screen lg:flex">
@@ -45,13 +46,9 @@
         <input type="search" placeholder="Buscar tarefas..." class="search-input w-full rounded-full py-3 pl-11 pr-4 text-sm outline-none">
       </div>
       <div class="flex items-center gap-3">
-        <button class="icon-button" aria-label="Notificações"><i data-lucide="bell"></i><span class="notification-dot"></span></button>
+        <div th:replace="~{fragments/notifications :: control}"></div>
         <div class="hidden h-8 border-l border-purple-100 sm:block"></div>
-        <button class="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-purple-50">
-          <div class="avatar avatar-small">LC</div>
-          <span class="hidden text-sm font-semibold sm:inline" th:text="${usuarioNome} ?: 'Laís'">Laís</span>
-          <i data-lucide="chevron-down" class="h-4 w-4"></i>
-        </button>
+        <div th:replace="~{fragments/profile :: topbar}"></div>
         <a th:href="@{/tarefas/nova}" href="/tarefas/nova" class="primary-button"><i data-lucide="plus" class="h-4 w-4"></i><span>Nova tarefa</span></a>
       </div>
     </header>
@@ -62,6 +59,13 @@
         <div class="flex items-center gap-3">
           <i data-lucide="circle-check" class="h-5 w-5 text-emerald-600"></i>
           <span class="text-sm font-medium" th:text="${mensagemSucesso}">Ação realizada com sucesso!</span>
+        </div>
+      </div>
+
+      <div th:if="${mensagemErro}" class="flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-rose-800">
+        <div class="flex items-center gap-3">
+          <i data-lucide="circle-alert" class="h-5 w-5 text-rose-600"></i>
+          <span class="text-sm font-medium" th:text="${mensagemErro}">Não foi possível concluir a ação.</span>
         </div>
       </div>
 
@@ -202,7 +206,7 @@
                   </span>
                   <span th:if="${tarefa.projetoId}" class="flex items-center gap-1 text-violet font-medium">
                     <i data-lucide="folder" class="h-3.5 w-3.5"></i>
-                    <span>Projeto #<span th:text="${tarefa.projetoId}">1</span></span>
+                    <span th:text="${nomesProjetos[tarefa.projetoId]} ?: ('Projeto #' + ${tarefa.projetoId})">Projeto</span>
                   </span>
                 </div>
               </div>
@@ -242,7 +246,7 @@
   </main>
 </div>
 
-<script src="https://unpkg.com/lucide@latest"></script>
-<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+<script src="https://unpkg.com/lucide@0.468.0"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
 </body>
 </html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${modoEdicao} ? 'IntelliPlan | Editar Matéria' : 'IntelliPlan | Nova Matéria'">IntelliPlan | Estudos</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/pages/modules.css}" href="/css/pages/modules.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+  <div th:replace="~{fragments/sidebar :: sidebar('estudos')}"></div>
+  <main class="module-main">
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+    <div class="module-content">
+      <div class="page-heading"><div><h1 th:text="${modoEdicao} ? 'Editar matéria' : 'Nova matéria'">Matéria</h1><p>Cadastre uma disciplina ou área de estudo.</p></div></div>
+      <section class="content-panel form-panel">
+        <div class="panel-heading"><h2><i data-lucide="book-open"></i>Dados da matéria</h2></div>
+        <form th:action="${modoEdicao} ? @{/estudos/{id}/editar(id=${materiaId})} : @{/estudos}"
+              th:object="${materiaForm}" method="post" data-validate class="form-body">
+          <div class="form-grid">
+            <div class="form-field full">
+              <label for="nome">Nome *</label>
+              <input id="nome" th:field="*{nome}" required maxlength="200" placeholder="Ex.: Cálculo I">
+              <p th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}" class="validation-error"></p>
+            </div>
+            <div class="form-field full">
+              <label for="descricao">Descrição</label>
+              <textarea id="descricao" th:field="*{descricao}" placeholder="Objetivos e observações"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <a th:href="@{/estudos}" class="secondary-button">Cancelar</a>
+            <button type="submit" class="primary-button"><i data-lucide="check"></i><span th:text="${modoEdicao} ? 'Salvar alterações' : 'Criar matéria'"></span></button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="https://unpkg.com/lucide@0.468.0"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+</body>
+</html>

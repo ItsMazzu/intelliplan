@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 public interface TarefaRepository extends JpaRepository<Tarefa, Long>, JpaSpecificationExecutor<Tarefa> {
@@ -16,4 +17,10 @@ public interface TarefaRepository extends JpaRepository<Tarefa, Long>, JpaSpecif
     List<Tarefa> findByProjetoId(Long projetoId);
 
     List<Tarefa> findByUsuarioIdAndDataVencimentoBetween(Long usuarioId, LocalDate inicio, LocalDate fim);
+
+    List<Tarefa> findByUsuarioIdAndDataVencimentoLessThanEqualAndStatusIn(
+            Long usuarioId,
+            LocalDate dataLimite,
+            Collection<Tarefa.Status> status
+    );
 }
