@@ -4,6 +4,122 @@
  */
 
 document.addEventListener('DOMContentLoaded', function () {
+    const favoriteUser = document.querySelector('[data-favorite-user]')?.textContent.trim().toLowerCase();
+    const favoriteList = document.querySelector('[data-favorite-list]');
+    const favoriteFeedback = document.querySelector('[data-favorite-feedback]');
+    const favoriteButtonsSelector = '.star-button[data-task-id]';
+    const favorites = new Set();
+    const favoriteStorageKey = favoriteUser
+        ? `intelliplan:dashboard:favorites:${favoriteUser}`
+        : null;
+
+    function showFavoriteFeedback(message, isError) {
+        if (!favoriteFeedback) return;
+
+        favoriteFeedback.textContent = message;
+        favoriteFeedback.classList.remove(
+            'hidden',
+            'bg-emerald-50',
+            'text-emerald-800',
+            'bg-rose-50',
+            'text-rose-800'
+        );
+        favoriteFeedback.classList.add(
+            isError ? 'bg-rose-50' : 'bg-emerald-50',
+            isError ? 'text-rose-800' : 'text-emerald-800'
+        );
+    }
+
+    function updateFavoriteButton(button, isFavorite) {
+        const label = isFavorite ? 'Remover dos favoritos' : 'Favoritar';
+        button.classList.toggle('active', isFavorite);
+        button.setAttribute('aria-pressed', String(isFavorite));
+        button.setAttribute('aria-label', label);
+        button.setAttribute('title', label);
+
+        const icon = button.querySelector('svg') || button.querySelector('[data-lucide="star"]');
+        if (icon) icon.setAttribute('fill', isFavorite ? 'currentColor' : 'none');
+    }
+
+    function syncFavoriteButtons(container) {
+        if (!container) return;
+
+        const buttons = [];
+        if (container instanceof Element && container.matches(favoriteButtonsSelector)) {
+            buttons.push(container);
+        }
+        if (container.querySelectorAll) {
+            buttons.push(...container.querySelectorAll(favoriteButtonsSelector));
+        }
+        buttons.forEach((button) => {
+            updateFavoriteButton(button, favorites.has(button.dataset.taskId));
+        });
+    }
+
+    if (favoriteStorageKey) {
+        try {
+            const storedFavorites = window.localStorage.getItem(favoriteStorageKey);
+            if (storedFavorites !== null) {
+                const favoriteIds = JSON.parse(storedFavorites);
+                if (!Array.isArray(favoriteIds) || favoriteIds.some((id) => typeof id !== 'string')) {
+                    throw new TypeError('Lista de favoritos inválida.');
+                }
+                favoriteIds.forEach((id) => favorites.add(id));
+            }
+        } catch (error) {
+            console.error('Não foi possível carregar os favoritos locais.', error);
+            showFavoriteFeedback('Não foi possível carregar os favoritos salvos neste navegador.', true);
+        }
+
+        syncFavoriteButtons(document);
+
+        document.addEventListener('click', function (event) {
+            const target = event.target instanceof Element ? event.target : null;
+            const button = target ? target.closest(favoriteButtonsSelector) : null;
+            if (!button) return;
+
+            event.preventDefault();
+            const taskId = button.dataset.taskId;
+            const wasFavorite = favorites.has(taskId);
+            if (wasFavorite) {
+                favorites.delete(taskId);
+            } else {
+                favorites.add(taskId);
+            }
+            updateFavoriteButton(button, !wasFavorite);
+
+            try {
+                window.localStorage.setItem(favoriteStorageKey, JSON.stringify([...favorites]));
+                showFavoriteFeedback(
+                    !wasFavorite ? 'Tarefa adicionada aos favoritos.' : 'Tarefa removida dos favoritos.',
+                    false
+                );
+            } catch (error) {
+                if (wasFavorite) {
+                    favorites.add(taskId);
+                } else {
+                    favorites.delete(taskId);
+                }
+                updateFavoriteButton(button, wasFavorite);
+                console.error('Não foi possível salvar os favoritos locais.', error);
+                showFavoriteFeedback('Não foi possível salvar o favorito neste navegador.', true);
+            }
+        });
+
+        if (favoriteList && window.MutationObserver) {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach(syncFavoriteButtons);
+                });
+            });
+            observer.observe(favoriteList, { childList: true, subtree: true });
+        }
+    } else {
+        document.querySelectorAll(favoriteButtonsSelector).forEach((button) => {
+            button.disabled = true;
+        });
+        showFavoriteFeedback('Não foi possível identificar a conta autenticada.', true);
+    }
 
     // ===== Busca (Ctrl+K) =====
     document.addEventListener('keydown', function (e) {
@@ -43,23 +159,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ===== Estrelas Favorito =====
-    document.querySelectorAll('.star-button').forEach(function (star) {
-    star.addEventListener('click', function () {
-        const active = this.classList.toggle('active');
-        const icon = this.querySelector('[data-lucide]');
-
-        this.setAttribute(
-            'aria-label',
-            active ? 'Remover dos favoritos' : 'Favoritar'
-        );
-
-        if (icon) {
-            icon.setAttribute('fill', active ? 'currentColor' : 'none');
-        }
-    });
-});
-  
     // ===== Dias do Calendário =====
     document.querySelectorAll('.calendario-dia').forEach(function (dia) {
         if (!dia.classList.contains('vazio')) {
