@@ -92,6 +92,7 @@
                       th:field="*{descricao}"
                       rows="3"
                       placeholder="Descreva detalhes, anotações ou observações úteis..."
+                      data-markdown-input
                       class="w-full rounded-2xl border border-line bg-mist px-4 py-3 text-sm text-ink outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10"></textarea>
           </div>
 
@@ -182,5 +183,6 @@
 
 <script src="https://unpkg.com/lucide@0.468.0"></script>
 <script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/components/markdown-renderer.js}" src="/js/components/markdown-renderer.js"></script>
 </body>
 </html>

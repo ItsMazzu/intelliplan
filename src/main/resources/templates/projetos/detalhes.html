@@ -26,7 +26,7 @@
         <section>
           <div class="detail-hero">
             <h2 th:text="${projeto.nome}">Projeto</h2>
-            <p th:text="${projeto.descricao} ?: 'Sem descrição cadastrada.'"></p>
+            <div class="markdown-content" data-markdown th:text="${projeto.descricao} ?: 'Sem descrição cadastrada.'"></div>
           </div>
           <section class="content-panel detail-tasks">
             <div class="panel-heading"><h2><i data-lucide="list-checks"></i>Tarefas relacionadas</h2></div>
@@ -39,7 +39,7 @@
               <article th:each="tarefa : ${tarefas}" class="data-row">
                 <div class="row-main">
                   <div class="row-icon"><i data-lucide="square-check-big"></i></div>
-                  <div class="row-copy"><strong th:text="${tarefa.titulo}">Tarefa</strong><p th:text="${tarefa.descricao} ?: 'Sem descrição'"></p></div>
+                  <div class="row-copy"><strong th:text="${tarefa.titulo}">Tarefa</strong><div class="markdown-content" data-markdown th:text="${tarefa.descricao} ?: 'Sem descrição'"></div></div>
                 </div>
                 <span th:if="${tarefa.status.name() == 'CONCLUIDA'}" class="badge badge-green">Concluída</span>
                 <span th:if="${tarefa.status.name() == 'PENDENTE'}" class="badge badge-violet">Pendente</span>
@@ -73,5 +73,6 @@
 </div>
 <script src="https://unpkg.com/lucide@0.468.0"></script>
 <script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/components/markdown-renderer.js}" src="/js/components/markdown-renderer.js"></script>
 </body>
 </html>

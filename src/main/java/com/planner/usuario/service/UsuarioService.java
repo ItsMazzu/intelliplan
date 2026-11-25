@@ -2,6 +2,8 @@ package com.planner.usuario.service;
 
 import com.planner.common.exception.DuplicateResourceException;
 import com.planner.common.exception.ResourceNotFoundException;
+import com.planner.common.exception.BusinessRuleException;
+import com.planner.usuario.dto.AlterarSenhaDTO;
 import com.planner.usuario.dto.UsuarioRequestDTO;
 import com.planner.usuario.dto.UsuarioResponseDTO;
 import com.planner.usuario.entity.Usuario;
@@ -56,6 +58,27 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findByEmail(emailNormalizado)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         return toResponseDTO(usuario);
+    }
+
+    @Transactional
+    public void alterarSenha(String emailAtual, AlterarSenhaDTO dto) {
+        if (dto == null || dto.novaSenha() == null || dto.confirmarNovaSenha() == null
+                || dto.novaSenha().length() < 8 || dto.novaSenha().length() > 100) {
+            throw new BusinessRuleException("A nova senha deve ter entre 8 e 100 caracteres.");
+        }
+        if (!dto.novaSenha().equals(dto.confirmarNovaSenha())) {
+            throw new BusinessRuleException("A confirmação da nova senha não coincide.");
+        }
+
+        String emailNormalizado = normalizarEmail(emailAtual);
+        Usuario usuario = usuarioRepository.findByEmail(emailNormalizado)
+                .orElseThrow(() -> new BusinessRuleException("Não foi possível alterar a senha."));
+        if (dto.senhaAtual() == null || !passwordEncoder.matches(dto.senhaAtual(), usuario.getSenha())) {
+            throw new BusinessRuleException("A senha atual está incorreta.");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(dto.novaSenha()));
+        usuarioRepository.save(usuario);
     }
 
     @Transactional(readOnly = true)

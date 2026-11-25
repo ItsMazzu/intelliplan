@@ -43,7 +43,7 @@
               <div class="row-icon"><i data-lucide="book-marked"></i></div>
               <div class="row-copy">
                 <strong th:text="${item.materia.nome}">Matéria</strong>
-                <p th:text="${item.materia.descricao} ?: 'Sem descrição'">Descrição</p>
+                <div class="markdown-content" data-markdown th:text="${item.materia.descricao} ?: 'Sem descrição'">Descrição</div>
               </div>
             </div>
             <div class="row-actions">
@@ -65,5 +65,6 @@
 </div>
 <script src="https://unpkg.com/lucide@0.468.0"></script>
 <script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/components/markdown-renderer.js}" src="/js/components/markdown-renderer.js"></script>
 </body>
 </html>

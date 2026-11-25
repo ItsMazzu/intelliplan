@@ -1,9 +1,12 @@
 package com.planner.config.setup;
 
+import com.planner.config.localidade.LocalizacaoInstalacaoDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
@@ -20,6 +23,16 @@ import java.util.Set;
 public class InstallationConfigService {
 
     private final Object configuracaoLock = new Object();
+    private final Path arquivoConfiguracaoExplicito;
+
+    @Autowired
+    public InstallationConfigService() {
+        this.arquivoConfiguracaoExplicito = null;
+    }
+
+    InstallationConfigService(Path arquivoConfiguracaoExplicito) {
+        this.arquivoConfiguracaoExplicito = arquivoConfiguracaoExplicito.toAbsolutePath().normalize();
+    }
 
     public boolean testConnection(DatabaseConfigDTO config) {
         String url = url(config);
@@ -40,20 +53,7 @@ public class InstallationConfigService {
                 properties.setProperty("spring.datasource.username", config.usuario());
                 properties.setProperty("spring.datasource.password", config.senha());
                 properties.setProperty("installation.initialized", "false");
-
-                Path temporary = Files.createTempFile(file.getParent(), "intelliplan-", ".tmp");
-                try (var writer = new OutputStreamWriter(Files.newOutputStream(temporary), StandardCharsets.UTF_8)) {
-                    properties.store(writer, "IntelliPlan local configuration");
-                }
-                protectTemporaryFile(temporary);
-                try {
-                    Files.move(temporary, file,
-                            StandardCopyOption.REPLACE_EXISTING,
-                            StandardCopyOption.ATOMIC_MOVE);
-                } catch (AtomicMoveNotSupportedException ex) {
-                    Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
-                }
-                protectTemporaryFile(file);
+                persistir(file, properties);
             } catch (IOException ex) {
                 throw new IllegalStateException("Não foi possível persistir a configuração local.", ex);
             }
@@ -67,19 +67,7 @@ public class InstallationConfigService {
                 Files.createDirectories(file.getParent());
                 Properties properties = Files.exists(file) ? load(file) : new Properties();
                 properties.setProperty("installation.initialized", "true");
-                Path temporary = Files.createTempFile(file.getParent(), "intelliplan-", ".tmp");
-                try (var writer = new OutputStreamWriter(Files.newOutputStream(temporary), StandardCharsets.UTF_8)) {
-                    properties.store(writer, "IntelliPlan local configuration");
-                }
-                protectTemporaryFile(temporary);
-                try {
-                    Files.move(temporary, file,
-                            StandardCopyOption.REPLACE_EXISTING,
-                            StandardCopyOption.ATOMIC_MOVE);
-                } catch (AtomicMoveNotSupportedException ex) {
-                    Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
-                }
-                protectTemporaryFile(file);
+                persistir(file, properties);
             } catch (IOException ex) {
                 throw new IllegalStateException("Não foi possível concluir a persistência da instalação.", ex);
             }
@@ -97,7 +85,47 @@ public class InstallationConfigService {
         }
     }
 
+    public LocalizacaoInstalacaoDTO getLocalizacao() {
+        synchronized (configuracaoLock) {
+            Path file = configFile();
+            if (!Files.exists(file)) {
+                return LocalizacaoInstalacaoDTO.vazia();
+            }
+            Properties properties = load(file);
+            return new LocalizacaoInstalacaoDTO(
+                    properties.getProperty("installation.location.uf", ""),
+                    properties.getProperty("installation.location.municipio", ""),
+                    properties.getProperty("installation.location.codigo-ibge", "")
+            );
+        }
+    }
+
+    public void saveLocalizacao(LocalizacaoInstalacaoDTO localizacao) {
+        synchronized (configuracaoLock) {
+            Path file = configFile();
+            try {
+                Files.createDirectories(file.getParent());
+                Properties properties = Files.exists(file) ? load(file) : new Properties();
+                if (localizacao == null || !localizacao.configurada()) {
+                    properties.remove("installation.location.uf");
+                    properties.remove("installation.location.municipio");
+                    properties.remove("installation.location.codigo-ibge");
+                } else {
+                    properties.setProperty("installation.location.uf", localizacao.uf());
+                    properties.setProperty("installation.location.municipio", localizacao.municipio());
+                    properties.setProperty("installation.location.codigo-ibge", localizacao.codigoIbge());
+                }
+                persistir(file, properties);
+            } catch (IOException ex) {
+                throw new IllegalStateException("Não foi possível persistir a localização da instalação.", ex);
+            }
+        }
+    }
+
     public Path configFile() {
+        if (arquivoConfiguracaoExplicito != null) {
+            return arquivoConfiguracaoExplicito;
+        }
         String configured = System.getenv("INTELLIPLAN_CONFIG_FILE");
         if (configured != null && !configured.isBlank()) {
             return Path.of(configured).toAbsolutePath().normalize();
@@ -109,12 +137,28 @@ public class InstallationConfigService {
 
     private Properties load(Path file) {
         Properties properties = new Properties();
-        try (var input = Files.newInputStream(file)) {
+        try (var input = new InputStreamReader(Files.newInputStream(file), StandardCharsets.UTF_8)) {
             properties.load(input);
             return properties;
         } catch (IOException ex) {
             throw new IllegalStateException("Não foi possível ler a configuração local.", ex);
         }
+    }
+
+    private void persistir(Path file, Properties properties) throws IOException {
+        Path temporary = Files.createTempFile(file.getParent(), "intelliplan-", ".tmp");
+        try (var writer = new OutputStreamWriter(Files.newOutputStream(temporary), StandardCharsets.UTF_8)) {
+            properties.store(writer, "IntelliPlan local configuration");
+        }
+        protectTemporaryFile(temporary);
+        try {
+            Files.move(temporary, file,
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException ex) {
+            Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
+        }
+        protectTemporaryFile(file);
     }
 
     private String url(DatabaseConfigDTO config) {

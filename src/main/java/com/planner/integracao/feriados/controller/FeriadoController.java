@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/feriados")
-@Tag(name = "Feriados", description = "Consulta de feriados nacionais via BrasilAPI")
+@Tag(name = "Feriados", description = "Consulta consolidada de feriados disponíveis para a localização da instalação")
 public class FeriadoController {
 
     private final FeriadoService feriadoService;
@@ -27,7 +27,7 @@ public class FeriadoController {
     }
 
     @GetMapping("/{ano}")
-    @Operation(summary = "Listar feriados nacionais por ano", description = "Retorna a lista de feriados nacionais para o ano informado a partir da BrasilAPI")
+    @Operation(summary = "Listar feriados por ano", description = "Retorna feriados nacionais e regionais cobertos por fontes validadas para a localização configurada")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Feriados consultados com sucesso")
     })

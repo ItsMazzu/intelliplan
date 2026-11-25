@@ -173,6 +173,58 @@
   font-size: 13px;
 }
 
+.password-change-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.location-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 14px;
+}
+
+.location-form .location-status,
+.location-form > .primary-button {
+  grid-column: 1 / -1;
+}
+
+.location-status,
+.location-coverage p,
+.location-coverage li {
+  color: #746582;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.location-coverage {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid #eee8f2;
+  border-radius: 12px;
+  background: #faf8fd;
+}
+
+.location-coverage strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #30243f;
+  font-size: 12px;
+}
+
+.location-coverage ul {
+  padding-left: 18px;
+  list-style: disc;
+}
+
+.password-change-form > .primary-button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
 .settings-info-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -204,11 +256,24 @@
   }
 
   .settings-nav {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .settings-nav a {
     justify-content: center;
+  }
+
+  .password-change-form {
+    grid-template-columns: 1fr;
+  }
+
+  .location-form {
+    grid-template-columns: 1fr;
+  }
+
+  .location-form .location-status,
+  .location-form > .primary-button {
+    grid-column: auto;
   }
 }
 

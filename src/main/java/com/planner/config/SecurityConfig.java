@@ -29,6 +29,7 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/icons/**",
+                                "/api/v1/localidades/**",
                                 "/error"
                         ).permitAll()
                         .requestMatchers(

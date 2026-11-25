@@ -5,6 +5,9 @@ public record DiaCalendarioDTO(
         boolean hoje,
         boolean temEvento,
         boolean temFeriado,
-        String nomeFeriado
+        boolean temPontoFacultativo,
+        String nomeFeriado,
+        String categoriasFeriado,
+        String classesCategoriaFeriado
 ) {
 }

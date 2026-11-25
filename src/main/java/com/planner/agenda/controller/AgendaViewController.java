@@ -29,10 +29,12 @@ import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
@@ -199,10 +201,15 @@ public class AgendaViewController {
                                                            List<CompromissoResponseDTO> compromissos) {
         LocalDate primeiro = mes.atDay(1);
         LocalDate inicioGrade = primeiro.minusDays(primeiro.getDayOfWeek().getValue() % 7);
-        List<FeriadoDTO> feriados = feriadoService.listarFeriados(mes.getYear());
+        LocalDate fimGrade = inicioGrade.plusDays(41);
+        List<FeriadoDTO> feriados = new ArrayList<>();
+        Set<Integer> anosExibidos = new HashSet<>(
+                List.of(inicioGrade.getYear(), mes.getYear(), fimGrade.getYear()));
+        anosExibidos.forEach(ano -> feriados.addAll(feriadoService.listarFeriados(ano)));
         Map<LocalDate, FeriadoDTO> feriadosPorDia = feriados.stream()
                 .filter(feriado -> feriado.date() != null)
-                .collect(Collectors.toMap(FeriadoDTO::date, feriado -> feriado, (primeiroFeriado, segundo) -> primeiroFeriado));
+                .collect(Collectors.toMap(FeriadoDTO::date, feriado -> feriado,
+                        (primeiroFeriado, segundo) -> primeiroFeriado));
         List<Map<String, Object>> dias = new ArrayList<>();
         for (int i = 0; i < 42; i++) {
             LocalDate data = inicioGrade.plusDays(i);
@@ -220,10 +227,12 @@ public class AgendaViewController {
             dia.put("fora", data.getMonth() != mes.getMonth());
             dia.put("hoje", data.equals(LocalDate.now()));
             dia.put("eventos", eventos);
-            FeriadoDTO feriado = data.getYear() == mes.getYear()
-                    ? feriadosPorDia.get(data)
-                    : null;
+            FeriadoDTO feriado = feriadosPorDia.get(data);
             dia.put("feriado", feriado);
+            dia.put("feriadoCategorias", feriado == null ? "" : feriado.descricaoCategorias());
+            dia.put("feriadoCategoriasCss", feriado == null ? "" : feriado.categoriasCss());
+            dia.put("feriadoClasse", feriado == null ? "" : feriado.classeCalendario());
+            dia.put("feriadoRotulo", feriado == null ? "" : feriado.rotuloCalendario());
             dias.add(dia);
         }
         return dias;

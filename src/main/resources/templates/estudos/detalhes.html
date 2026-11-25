@@ -18,7 +18,7 @@
       <div th:if="${mensagemSucesso}" class="feedback feedback-success"><i data-lucide="circle-check"></i><span th:text="${mensagemSucesso}"></span></div>
       <div th:if="${mensagemErro}" class="feedback feedback-error"><i data-lucide="circle-alert"></i><span th:text="${mensagemErro}"></span></div>
       <div class="page-heading">
-        <div><h1 th:text="${materia.nome}">Matéria</h1><p th:text="${materia.descricao} ?: 'Conteúdos de estudo da matéria.'"></p></div>
+        <div><h1 th:text="${materia.nome}">Matéria</h1><div class="markdown-content" data-markdown th:text="${materia.descricao} ?: 'Conteúdos de estudo da matéria.'"></div></div>
         <div class="row-actions">
           <a th:href="@{/estudos}" class="secondary-button"><i data-lucide="arrow-left"></i><span>Voltar</span></a>
           <a th:href="@{/estudos/{materiaId}/conteudos/novo(materiaId=${materia.id})}" class="primary-button"><i data-lucide="plus"></i><span>Novo conteúdo</span></a>
@@ -40,7 +40,7 @@
             <article th:each="conteudo : ${conteudos}" class="data-row" th:attr="data-searchable=${conteudo.titulo + ' ' + conteudo.descricao}">
               <div class="row-main">
                 <div class="row-icon"><i data-lucide="book-open"></i></div>
-                <div class="row-copy"><strong th:text="${conteudo.titulo}">Conteúdo</strong><p th:text="${conteudo.descricao} ?: 'Sem descrição'"></p></div>
+                <div class="row-copy"><strong th:text="${conteudo.titulo}">Conteúdo</strong><div class="markdown-content" data-markdown th:text="${conteudo.descricao} ?: 'Sem descrição'"></div></div>
               </div>
               <div class="row-actions">
                 <span th:if="${conteudo.status.name() == 'NAO_INICIADO'}" class="badge badge-slate">Não iniciado</span>
@@ -66,5 +66,6 @@
 </div>
 <script src="https://unpkg.com/lucide@0.468.0"></script>
 <script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/components/markdown-renderer.js}" src="/js/components/markdown-renderer.js"></script>
 </body>
 </html>

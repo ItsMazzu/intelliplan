@@ -198,7 +198,7 @@
               </form>
               <div class="min-w-0 flex-1">
                 <p class="text-sm font-semibold text-ink" th:classappend="${tarefa.status().name() == 'CONCLUIDA'} ? ' line-through text-slate-400' : ''" th:text="${tarefa.titulo}">Título da Tarefa</p>
-                <p th:if="${tarefa.descricao}" class="text-xs text-slate-500 mt-1 line-clamp-2" th:text="${tarefa.descricao}">Descrição da tarefa...</p>
+                <div th:if="${tarefa.descricao}" class="markdown-content markdown-content-two-lines text-xs text-slate-500 mt-1" data-markdown th:text="${tarefa.descricao}">Descrição da tarefa...</div>
                 <div class="flex flex-wrap items-center gap-3 mt-2 text-xs text-slate-400">
                   <span th:if="${tarefa.dataVencimento}" class="flex items-center gap-1">
                     <i data-lucide="calendar" class="h-3.5 w-3.5"></i>
@@ -248,5 +248,6 @@
 
 <script src="https://unpkg.com/lucide@0.468.0"></script>
 <script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/components/markdown-renderer.js}" src="/js/components/markdown-renderer.js"></script>
 </body>
 </html>

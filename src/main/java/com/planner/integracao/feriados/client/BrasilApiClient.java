@@ -1,6 +1,6 @@
 package com.planner.integracao.feriados.client;
 
-import com.planner.integracao.feriados.dto.FeriadoDTO;
+import com.planner.integracao.feriados.dto.BrasilApiFeriadoDTO;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -25,10 +25,10 @@ public class BrasilApiClient {
                 .build();
     }
 
-    public List<FeriadoDTO> buscarFeriadosPorAno(int ano) {
+    public List<BrasilApiFeriadoDTO> buscarFeriadosPorAno(int ano) {
         return restClient.get()
                 .uri("/api/feriados/v1/{ano}", ano)
                 .retrieve()
-                .body(new ParameterizedTypeReference<List<FeriadoDTO>>() {});
+                .body(new ParameterizedTypeReference<List<BrasilApiFeriadoDTO>>() {});
     }
 }

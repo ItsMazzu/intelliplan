@@ -22,18 +22,20 @@ A plataforma combina uma interface web server-side desenvolvida com Thymeleaf, T
 
 A aplicação está organizada nos seguintes módulos:
 
-| Módulo | Descrição | Status no Backend |
+| Módulo | Implementação atual |
 |---|---|---|
-| **Dashboard** | Visão geral consolidada: métricas da semana, progresso geral, hábitos recentes, tarefas do dia, projetos ativos e calendário com compromissos e feriados nacionais. | **Concluído e Integrado** |
-| **Tarefas** | Criação, consulta, atualização, exclusão e alternância de status de tarefas com prioridades, datas de vencimento e vinculação opcional a projetos. | **Concluído (MVC/Thymeleaf + Service)** |
-| **Projetos** | Criação e acompanhamento de projetos com status, prazos e agregação de tarefas associadas. | **Concluído (REST + Service)** |
-| **Estudos** | Gerenciamento de disciplinas/matérias e acompanhamento de tópicos/conteúdos de estudo com percentuais de conclusão. | **Concluído (REST + Service)** |
-| **Agenda** | Gerenciamento de compromissos com horários de início e término, locais e consulta por períodos. | **Concluído (REST + Service)** |
-| **Hábitos** | Cadastro de hábitos com frequências (diária, semanal, mensal), ativação/desativação e registro diário de execução. | **Concluído (REST + Service)** |
-| **Feriados** | Sincronização e consulta de feriados nacionais brasileiros via BrasilAPI, integrados à agenda e ao calendário. | **Concluído e Integrado** |
-| **Usuários** | Cadastro de contas com hash seguro de senhas via BCrypt e consulta por ID ou e-mail. | **Concluído (REST + Service)** |
-| **Configurações** | Página autenticada `/configuracoes` com dados da conta, encerramento seguro da sessão e informações disponíveis da instalação. | **Concluído (MVC)** |
-| **Notificações** | Central persistente por usuário com lembretes de tarefas, compromissos, hábitos e projetos; permite marcar itens como lidos. | **Concluído (REST + interface)** |
+| **Dashboard** | **Implementada.** Métricas do usuário, tarefas, projetos, estudos, hábitos e calendário de compromissos/feriados. |
+| **Tarefas** | **Implementada.** CRUD e filtros pela interface MVC/Thymeleaf; não há controller REST de tarefas neste checkout. |
+| **Projetos** | **Implementada.** Interface MVC e API REST; estados, datas e vínculo/progresso das tarefas. |
+| **Estudos** | **Implementada.** Matérias e conteúdos com estados e progresso, por interface MVC e API REST. |
+| **Agenda** | **Implementada.** Interface MVC e API REST para compromissos, período, horários e local. |
+| **Hábitos** | **Implementada.** Hábitos, ativação, frequência e registros, por interface MVC e API REST. |
+| **Feriados** | **Parcialmente implementada.** BrasilAPI para feriados nacionais reconhecidos pelo provider; cobertura regional implementada para SP e Santos/SP. |
+| **Localidades** | **Implementada.** Consulta de estados e municípios e validação da localização da instalação via IBGE. |
+| **Usuários e acesso** | **Implementada.** Criação de conta pelo fluxo `/setup`, login/logout por sessão, senha BCrypt e alteração de senha; a API de usuários permite apenas consulta autenticada do próprio ID. |
+| **Configurações** | **Implementada.** Perfil, alteração de senha e localização compartilhada pela instalação em `/configuracoes`. |
+| **Notificações** | **Implementada.** Central persistente por usuário, sincronizada ao abrir/solicitar atualização, com lembretes de tarefas, compromissos, hábitos e projetos. |
+| **Descrições formatadas** | **Implementada.** Markdown renderizado no navegador nos formulários e nas visualizações; o backend continua armazenando texto. |
 
 ---
 
@@ -44,23 +46,35 @@ A aplicação está organizada nos seguintes módulos:
 - **Spring Boot 4.1.2** — framework base para a arquitetura em camadas.
 - **Spring Data JPA & Hibernate** — persistência relacional com lazy loading e métodos de consulta derivados.
 - **Jakarta Bean Validation** — validação declarativa de dados de entrada via anotações nos records.
-- **Spring Security** — autenticação por sessão, BCrypt, CSRF ativo e isolamento pela identidade autenticada.
+- **Spring Security** — formulário de login por sessão, `UserDetailsService`, BCrypt, CSRF habilitado e autorização das rotas.
 - **Springdoc OpenAPI 3.2.0** — documentação padronizada e interface interativa Swagger UI.
+- **Spring Web MVC / Thymeleaf** — páginas server-side e endpoints MVC.
 - **Apache Maven Wrapper (`mvnw`)** — automação de build e gerenciamento de dependências.
 
 ### Integrações Externas
-- **BrasilAPI** — consulta resiliente de feriados nacionais via `RestClient` do Spring com timeouts de conexão (3s) e leitura (5s), tratando falhas de rede defensivamente.
+- **BrasilAPI** — fornece as datas usadas pelo provider nacional, consultadas por `RestClient` com timeout de conexão de 3 segundos e leitura de 5 segundos.
+- **IBGE Localidades** — lista estados e municípios e valida a combinação de UF, nome e código IBGE antes de salvar a localização.
 
-As respostas não vazias da BrasilAPI são mantidas em cache em memória por ano. Resultados vazios e falhas não são armazenados, permitindo novas tentativas em chamadas posteriores. O cache não possui persistência nem compartilhamento entre instâncias e é perdido quando a aplicação reinicia.
+O `FeriadoService` mantém cache em memória por 12 horas, com chave por ano e localização; o cache de localidades do IBGE tem TTL de 24 horas. Não há persistência nem compartilhamento desses caches entre instâncias, e eles são perdidos ao reiniciar a aplicação. Respostas válidas, inclusive vazias, são armazenadas; uma consulta parcial por falha de provider não é cacheada. Os providers disponíveis ainda podem contribuir com os dados do calendário.
+
+As fontes estaduais e municipais não têm cobertura nacional uniforme. Há provider estadual para São Paulo e municipal para Santos/SP; para outras localidades, não são inferidas datas regionais. Carnaval, Sexta-feira Santa e Corpus Christi podem aparecer como ponto facultativo; em Santos, Sexta-feira Santa e Corpus Christi também têm incidência municipal. Quarta-feira de Cinzas está explicitamente incluída para 2026. Páscoa não é retornada como feriado.
+
+A localização usa os serviços oficiais do IBGE apenas para dados geográficos e validação, não como fonte de feriados. Ela fica no arquivo local da instalação, fora do repositório, e é compartilhada por seus usuários.
 
 ### Frontend
 - **Thymeleaf** — engine de templates server-side integrado ao Spring Boot.
 - **Tailwind CSS** — estilização e layout responsivo via CDN.
-- **Lucide Icons** — biblioteca de ícones vetoriais em SVG.
-- **JavaScript (Vanilla)** — manipulação dinâmica de elementos de tela e interatividade.
+- **Lucide Icons** — biblioteca de ícones SVG carregada via CDN.
+- **JavaScript (Vanilla)** — interações, notificações, seleção de localidades e renderer compartilhado de Markdown.
+- Não existe um projeto frontend separado nem um passo de build Node/npm; templates, CSS e JavaScript são servidos como recursos estáticos do Spring Boot.
+
+### Persistência
+- As entidades JPA cobrem usuários, tarefas, projetos, matérias, conteúdos de estudo, compromissos, hábitos, registros de hábito e notificações.
+- A localização e as credenciais de conexão configuradas pelo assistente ficam em arquivo de propriedades fora do repositório; as demais entidades são persistidas no PostgreSQL.
+- Descrições são mantidas como texto/string. O Markdown é interpretado apenas na apresentação web.
 
 ### Banco de Dados
-- **PostgreSQL 15+** — sistema gerenciador de banco de dados relacional.
+- **PostgreSQL** — sistema gerenciador relacional; o projeto não fixa uma versão mínima do servidor.
 
 ---
 
@@ -72,24 +86,26 @@ O projeto adota uma arquitetura em camadas com separação estrita de responsabi
 src/main/java/com/planner/
 ├── agenda          # Compromisso: Entity, Repository, DTOs, Service e REST Controller
 ├── common          # Exceções de domínio, manipulador global (RFC 7807) e UsuarioContextService
-├── config          # Configuração de segurança (SecurityConfig)
+├── config          # SecurityConfig, instalação e localização consultada/validada pelo IBGE
 ├── dashboard       # Dashboard: DTOs, Service de agregação e MVC Controller
 ├── estudos         # Matéria e ConteúdoEstudo: Entities, Repositories, DTOs, Services e Controllers
 ├── habitos         # Hábito e RegistroHabito: Entities, Repositories, DTOs, Services e Controllers
-├── integracao      # BrasilAPI: Client HTTP resiliente, DTO, Service e Controller
-├── notificacao     # Notificações persistentes por usuário, reconciliação de eventos e API autenticada
+├── integracao      # Feriados: BrasilAPI e provedores regionais com consolidação e cache
+├── notificacao     # Notificações persistidas, reconciliação de eventos e API
 ├── projeto         # Projeto: Entity, Repository, DTOs, Service e Controller
-├── tarefa          # Tarefa: Entity, Repository, DTOs, Service e Controller
-└── usuario         # Usuário: Entity, Repository, DTOs, Service (BCrypt) e Controller
+├── tarefa          # Tarefa: Entity, Repository, DTOs, Service e MVC Controller
+└── usuario         # Usuário, login, UserDetailsService, DTOs, Repository e Service
 ```
+
+As responsabilidades seguem o fluxo Controller (REST ou MVC) → Service → Repository/integração, com DTOs nas fronteiras REST. Os templates Thymeleaf ficam em `src/main/resources/templates`; estilos e scripts em `static/css` e `static/js`. Fragmentos de navegação, perfil e notificações são reutilizados pelas páginas.
 
 ### Decisões Arquiteturais Relevantes
 
 1. **Sem Lombok:** Código explícito e transparente com getters, setters e construtores desenvolvidos manualmente nas entidades e uso nativo de **Java Records** para DTOs.
-2. **Isolamento de Dados por Usuário:** Todas as operações de leitura e mutação validam o ID do usuário proprietário, impedindo acesso indevido entre contas.
-3. **Resolução de Contexto por Autenticação:** O `UsuarioContextService` obtém o usuário pelo e-mail do principal autenticado no Spring Security. O identificador fixo de desenvolvimento não é mais utilizado.
+2. **Isolamento de Dados por Usuário:** Os services de domínio recebem o ID derivado do principal autenticado e limitam buscas/mutações ao proprietário.
+3. **Resolução de Contexto por Autenticação:** O `UsuarioContextService` obtém o e-mail do principal autenticado e resolve o usuário no repositório; não usa ID fixo de desenvolvimento.
 4. **Tratamento Global de Erros (RFC 7807):** Respostas de erro uniformes via `GlobalExceptionHandler` utilizando `ProblemDetail` com campos `type`, `title`, `status`, `detail`, `timestamp` e `erros` (validações).
-5. **Dashboard Resiliente:** O `DashboardService` agrega dados de todos os módulos para alimentar a view Thymeleaf e trata cenários de banco de dados vazio com valores zerados seguros, prevenindo qualquer ocorrência de erro HTTP 500.
+5. **Dashboard Agregado:** O `DashboardService` reúne métricas dos módulos, compromissos e feriados da localização; retorna dados vazios quando não há usuário resolvido, sem substituir erros gerais por sucesso.
 
 ---
 
@@ -97,12 +113,12 @@ src/main/java/com/planner/
 
 ### Pré-requisitos
 - **Java Development Kit (JDK) 21** instalado e configurado no `PATH`.
-- **PostgreSQL 15+** em execução localmente ou via container Docker.
+- **PostgreSQL** acessível; o projeto não declara uma versão mínima do servidor.
 - **Git** instalado.
 
 ### Passo 1: Clonar o Repositório
 ```bash
-git clone https://github.com/Italo-Mazzucatto/IntelliPlan.git
+git clone https://github.com/ItsMazzu/intelliplan.git
 cd IntelliPlan
 ```
 
@@ -138,22 +154,28 @@ export DB_USERNAME="postgres"
 export DB_PASSWORD="sua_senha_aqui"
 ```
 
-### Passo 4: Configurar o Usuário de Desenvolvimento Local
-O identificador fixo `app.dev.usuario-id` não é mais usado. Ao concluir a primeira execução, entre em `/setup` enquanto o banco não tiver usuários e crie a conta principal. A configuração da conexão pode ser testada e salva pelo assistente; como o Spring Boot cria o `DataSource` na inicialização, uma reinicialização é necessária antes da criação da conta caso os parâmetros tenham sido alterados.
+### Passo 4: Configurar a instalação e criar a conta
+Inicie a aplicação com uma conexão PostgreSQL inicializável. Acesse `/setup` para testar/salvar os parâmetros do banco, selecionar estado e município e criar a primeira conta. Se o assistente salvar uma conexão diferente da que foi carregada no início, reinicie a aplicação antes de continuar. Após a instalação, `/setup` também apresenta o cadastro de contas adicionais.
 
 ### Passo 5: Compilar e Executar a Aplicação
 
-**Para compilar e empacotar o artefato WAR:**
+**Windows (PowerShell):**
 ```bash
-./mvnw clean package -DskipTests
+.\mvnw.cmd test
+.\mvnw.cmd clean package -DskipTests
+.\mvnw.cmd spring-boot:run
 ```
 
-**Para iniciar a aplicação diretamente via Maven Wrapper:**
+**Linux / macOS:**
 ```bash
+./mvnw test
+./mvnw clean package -DskipTests
 ./mvnw spring-boot:run
 ```
 
-A aplicação iniciará na porta padrão `8080`.
+A aplicação inicia na porta padrão `8080`. Não há inicialização separada de frontend: o Spring Boot serve as páginas Thymeleaf, CSS e JavaScript.
+
+As configurações padrão estão em `src/main/resources/application.properties`: URL `jdbc:postgresql://localhost:5432/intelliplan`, usuário `postgres` e senha vazia. Podem ser sobrescritas por `DB_URL`, `DB_USERNAME` e `DB_PASSWORD`, ou pelo arquivo local de configuração descrito abaixo. O Hibernate está configurado com `ddl-auto=update` e `show-sql=true`; o projeto não configura ferramenta de migração de schema.
 
 ---
 
@@ -166,10 +188,10 @@ http://localhost:8080/
 ```
 *(ou `http://localhost:8080/dashboard`)*
 
-O dashboard carregará as métricas da sua rotina, tarefas, projetos, matérias, hábitos e o calendário com compromissos e feriados nacionais.
+O dashboard e as demais páginas autenticadas exigem login. A cobertura regional validada de feriados está limitada a São Paulo e Santos/SP; outras localidades recebem somente datas nacionais disponibilizadas pelos providers.
 
 ### Documentação OpenAPI / Swagger UI
-Para explorar e testar interativamente todos os endpoints RESTful:
+Para explorar e testar interativamente os endpoints REST. As rotas Swagger/OpenAPI exigem autenticação com uma conta do IntelliPlan:
 ```
 http://localhost:8080/swagger-ui/index.html
 ```
@@ -194,33 +216,42 @@ Endpoints autenticados:
 | `PATCH` | `/api/v1/notificacoes/{id}/lida` | Marca uma notificação do usuário atual como lida. |
 | `PATCH` | `/api/v1/notificacoes/lidas` | Marca todas as notificações do usuário atual como lidas. |
 
-### Garantias do armazenamento local
+### Segurança e armazenamento local
+
+- O login usa e-mail e senha por formulário do Spring Security, sessão HTTP e senha armazenada com BCrypt. Não há JWT nem provedor externo de identidade.
+- CSRF permanece habilitado pelo Spring Security; formulários MVC e chamadas mutáveis da central de notificações enviam token CSRF.
+- As rotas de aplicação e APIs exigem autenticação, exceto rotas explicitamente públicas, como `/login`, `/setup/**`, recursos estáticos e consultas de localidades do IBGE. O Swagger exige a role `USER`; `POST /api/v1/usuarios` é negado. A criação de contas é feita pelo fluxo público `/setup`.
+- Logout é servido por `POST /logout`; alterar a senha exige a senha atual e encerra a sessão.
+- O `UsuarioContextService` resolve a identidade autenticada pelo e-mail. Os services de domínio escopam os dados do usuário atual.
 
 - O arquivo local fica em `%USERPROFILE%\.intelliplan\application.properties` no Windows ou `~/.intelliplan/application.properties` no Linux/macOS.
 - Administradores podem alterar o caminho com `INTELLIPLAN_CONFIG_FILE`.
 - Em sistemas compatíveis com POSIX, o arquivo usa permissões exclusivas do proprietário. No Windows, a proteção efetiva depende das permissões da conta e do diretório; o arquivo não é criptografado.
-- Senhas do banco e contas são hasheadas apenas no caso da conta principal (BCrypt). A senha do PostgreSQL fica no arquivo local em texto. Não use diretórios ou contas compartilhadas.
-- O estado de instalação é persistido no mesmo arquivo com `installation.initialized=true` e também confirmado pela existência da conta no PostgreSQL.
+- A senha do usuário é armazenada com BCrypt. A senha do PostgreSQL pode ficar em texto no arquivo local; restrinja o acesso ao arquivo e não use diretórios/contas compartilhados.
+- O estado de instalação e a localização compartilhada ficam no mesmo arquivo. A instalação também considera a existência de usuários no PostgreSQL.
+
+### Formatação das descrições
+
+Os campos de descrição são persistidos/transmitidos como texto. O frontend usa o renderer compartilhado `markdown-renderer.js` tanto no preview dos formulários quanto nas visualizações de cards/detalhes; não é adicionada uma transformação Markdown no backend. São suportados títulos, parágrafos/quebras de linha, listas simples, negrito, itálico, tachado, links, código em linha e blocos de código. Conteúdo HTML digitado é tratado como texto e links são limitados a `http`, `https`, `mailto` e caminhos seguros. Não é uma implementação completa do CommonMark (por exemplo, não documenta suporte a tabelas ou imagens).
 
 ---
 
-## 7. Status do Desenvolvimento
+## 7. Estado da implementação neste checkout
 
 | Componente | Situação | Observações |
 |---|---|---|
 | **Estrutura Base e Maven** | Concluída | Java 21, Spring Boot 4.1.2 e empacotamento WAR operacional. |
-| **Modelagem JPA (8 Entidades)** | Concluída | `Usuario`, `Tarefa`, `Projeto`, `Materia`, `ConteudoEstudo`, `Compromisso`, `Habito`, `RegistroHabito`. |
-| **Repositories (8 Repositories)** | Concluídos | Interfaces Spring Data JPA com consultas derivadas e filtros por usuário. |
+| **Modelagem JPA (9 entidades)** | Implementada | Inclui `Notificacao`, além das oito entidades de domínio listadas no histórico inicial. |
+| **Repositories (9 interfaces)** | Implementados | Interfaces Spring Data JPA para as entidades persistidas. |
 | **DTOs e Validações** | Concluídos | Records Java com validações Jakarta (`@NotBlank`, `@Size`, etc.). |
-| **Camada de Services (8 Services)** | Concluída | Regras de negócio, transações (`@Transactional`) e isolamento estrito de dados. |
+| **Services de domínio** | Implementados | Regras de negócio, transações e escopo pelo usuário autenticado. |
 | **Tratamento de Exceções** | Concluído | `GlobalExceptionHandler` mapeando exceções de domínio e validação para RFC 7807 (`ProblemDetail`). |
-| **Controllers REST (9 Controllers)** | Concluídos | Endpoints RESTful versionados sob `/api/v1/` com anotações OpenAPI. |
-| **Integração BrasilAPI** | Concluída | Client HTTP resiliente com timeouts para feriados nacionais e endpoint `/api/v1/feriados/{ano}`. |
-| **Contexto de Usuário** | Concluído | `UsuarioContextService` resolve o usuário pelo principal autenticado. |
-| **Dashboard com Dados Reais** | Concluído | Agregação completa de métricas, progresso e calendário sem erros em banco vazio. |
-| **Segurança da Aplicação** | Concluída | Login por sessão, BCrypt, CSRF ativo, logout seguro e restrição das APIs e páginas por autenticação. |
-| **Assistente de Primeira Execução** | Parcial | Teste e persistência da configuração PostgreSQL e criação da conta principal estão implementados; o assistente depende de o contexto Spring conseguir iniciar com uma conexão utilizável. |
-| **Telas Frontend dos Demais Módulos** | Concluídas | Implementação das interfaces visuais completas de cadastro e listagem para tarefas, projetos, estudos, agenda e hábitos. |
+| **APIs REST** | Implementadas parcialmente por domínio | Projetos, matérias, conteúdos, compromissos, hábitos/registros, usuários (consulta), notificações, feriados e localidades. Tarefas são MVC, não REST. |
+| **Integração de feriados** | Parcialmente implementada | Cobertura nacional via BrasilAPI e regional explicitamente restrita a SP e Santos/SP. |
+| **Localidades IBGE** | Implementada | Listagem de estados/municípios e validação; cache local de 24 horas. |
+| **Segurança** | Implementada | Login por sessão, BCrypt, CSRF padrão e autorização por rota/identidade; criação de contas permanece pública pelo fluxo `/setup`. |
+| **Assistente de instalação** | Implementado | Testa e persiste conexão, permite criar conta e exige localização no primeiro cadastro. A aplicação precisa iniciar com um datasource utilizável para renderizar o assistente. |
+| **Interface Web** | Implementada | Templates Thymeleaf, fragments compartilhados, páginas responsivas e JavaScript vanilla; sem build frontend separado. |
 
 ---
 

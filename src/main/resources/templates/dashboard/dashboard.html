@@ -151,15 +151,24 @@
           <div class="calendar-grid mt-2">
             <button th:each="dia : ${diasCalendario}"
                     class="calendar-date"
-                    th:classappend="${dia.hoje} ? ' selected' : (${dia.temFeriado} ? ' is-holiday' : (${dia.temEvento} ? ' has-event' : ''))"
-                    th:attr="title=${dia.temFeriado} ? 'Feriado: ' + ${dia.nomeFeriado} : (${dia.temEvento} ? 'Possui evento' : 'Nenhum evento'),aria-label=${dia.temFeriado} ? ${dia.numero} + ' - Feriado: ' + ${dia.nomeFeriado} : ${dia.numero}"
-                    th:text="${dia.numero}">1</button>
+                    th:classappend="${(dia.hoje ? ' selected' : '') + (dia.temFeriado ? ' is-holiday ' + dia.classesCategoriaFeriado : (dia.temPontoFacultativo ? ' is-facultative ' + dia.classesCategoriaFeriado : (dia.temEvento ? ' has-event' : '')))}"
+                    th:attr="title=${dia.temFeriado} ? 'Feriado: ' + ${dia.nomeFeriado} + ' (' + ${dia.categoriasFeriado} + ')' : (${dia.temPontoFacultativo} ? 'Ponto facultativo: ' + ${dia.nomeFeriado} : (${dia.temEvento} ? 'Possui evento' : 'Nenhum evento')),aria-label=${dia.temFeriado} ? ${dia.numero} + ' - Feriado: ' + ${dia.nomeFeriado} + ', ' + ${dia.categoriasFeriado} : (${dia.temPontoFacultativo} ? ${dia.numero} + ' - Ponto facultativo: ' + ${dia.nomeFeriado} : ${dia.numero})">
+              <span th:text="${dia.numero}">1</span>
+            </button>
             <div th:if="${diasCalendario == null}" class="contents">
               <button class="calendar-date">1</button><button class="calendar-date">2</button><button class="calendar-date">3</button><button class="calendar-date">4</button><button class="calendar-date">5</button><button class="calendar-date">6</button><button class="calendar-date">7</button>
               <button class="calendar-date">8</button><button class="calendar-date">9</button><button class="calendar-date">10</button><button class="calendar-date selected">11</button><button class="calendar-date">12</button><button class="calendar-date has-event">13</button><button class="calendar-date">14</button>
               <button class="calendar-date">15</button><button class="calendar-date">16</button><button class="calendar-date">17</button><button class="calendar-date">18</button><button class="calendar-date">19</button><button class="calendar-date">20</button><button class="calendar-date">21</button>
               <button class="calendar-date">22</button><button class="calendar-date">23</button><button class="calendar-date">24</button><button class="calendar-date">25</button><button class="calendar-date">26</button><button class="calendar-date">27</button><button class="calendar-date">28</button>
               <button class="calendar-date">29</button><button class="calendar-date">30</button>
+            </div>
+          </div>
+          <div class="dashboard-holiday-list" th:if="${diasCalendario != null and !#lists.isEmpty(diasCalendario.?[temFeriado or temPontoFacultativo])}">
+            <div th:each="dia : ${diasCalendario}" th:if="${dia.temFeriado or dia.temPontoFacultativo}" class="dashboard-holiday-item"
+                 th:classappend="${dia.classesCategoriaFeriado}">
+              <strong th:text="${dia.numero}">1</strong>
+              <span th:text="${dia.nomeFeriado}">Feriado</span>
+              <small th:text="${dia.categoriasFeriado}">Nacional</small>
             </div>
           </div>
         </article>
@@ -223,7 +232,7 @@
             <div class="project-icon"><i data-lucide="panels-top-left"></i></div>
             <div class="min-w-0 flex-1">
               <div class="flex items-center justify-between gap-2"><p class="truncate text-sm font-semibold" th:text="${projeto.nome}">TCC – Sistema Automotivo</p><span class="tag tag-project">Em andamento</span></div>
-              <p class="mt-1 truncate text-xs text-slate-500" th:text="${projeto.descricao}">Desenvolvimento de uma plataforma de planejamento</p>
+              <div class="markdown-content markdown-content-compact mt-1 text-xs text-slate-500" data-markdown th:text="${projeto.descricao}">Desenvolvimento de uma plataforma de planejamento</div>
               <div class="mt-2 flex items-center gap-2"><div class="progress-track"><span th:style="'width:' + ${projeto.progresso} + '%' " style="width:70%"></span></div><small th:text="${projeto.progresso} + '%'">70%</small></div>
             </div>
           </div>
@@ -263,6 +272,7 @@
 
 <script src="https://unpkg.com/lucide@0.468.0"></script>
 <script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/components/markdown-renderer.js}" src="/js/components/markdown-renderer.js"></script>
 <script th:src="@{/js/pages/interaction-dashboard.js}" src="/js/pages/interaction-dashboard.js"></script>
 </body>
 </html>

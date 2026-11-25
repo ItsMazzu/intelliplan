@@ -13,6 +13,7 @@
     <i data-lucide="chevron-up" class="ml-auto h-4 w-4 text-purple-200"></i>
   </button>
   <div id="profile-menu-sidebar" class="profile-menu" data-profile-menu aria-hidden="true">
+    <a th:href="@{/configuracoes#senha}" href="/configuracoes#senha"><i data-lucide="key-round"></i><span>Alterar senha</span></a>
     <a th:href="@{/configuracoes}" href="/configuracoes"><i data-lucide="settings"></i><span>Configurações</span></a>
     <form th:action="@{/logout}" method="post">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -29,6 +30,7 @@
     <i data-lucide="chevron-down" class="h-4 w-4"></i>
   </button>
   <div id="profile-menu-topbar" class="profile-menu" data-profile-menu aria-hidden="true">
+    <a th:href="@{/configuracoes#senha}" href="/configuracoes#senha"><i data-lucide="key-round"></i><span>Alterar senha</span></a>
     <a th:href="@{/configuracoes}" href="/configuracoes"><i data-lucide="settings"></i><span>Configurações</span></a>
     <form th:action="@{/logout}" method="post">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">

@@ -28,7 +28,7 @@
             </div>
             <div class="form-field full">
               <label for="descricao">Descrição</label>
-              <textarea id="descricao" th:field="*{descricao}" placeholder="Objetivos e observações"></textarea>
+              <textarea id="descricao" th:field="*{descricao}" placeholder="Objetivos e observações" data-markdown-input></textarea>
             </div>
           </div>
           <div class="form-actions">
@@ -42,5 +42,6 @@
 </div>
 <script src="https://unpkg.com/lucide@0.468.0"></script>
 <script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/components/markdown-renderer.js}" src="/js/components/markdown-renderer.js"></script>
 </body>
 </html>

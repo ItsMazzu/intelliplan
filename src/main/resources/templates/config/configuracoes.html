@@ -26,11 +26,18 @@
       <div class="settings-layout">
         <aside class="settings-nav" aria-label="Categorias de configurações">
           <a href="#conta" class="selected"><i data-lucide="user-round"></i><span>Conta</span></a>
+          <a href="#senha"><i data-lucide="key-round"></i><span>Alterar senha</span></a>
+          <a href="#localizacao"><i data-lucide="map-pin"></i><span>Localização</span></a>
           <a href="#sessao"><i data-lucide="log-out"></i><span>Sessão</span></a>
           <a href="#suporte"><i data-lucide="circle-help"></i><span>Informações</span></a>
         </aside>
 
         <div class="settings-content">
+          <p th:if="${mensagemErro}" class="feedback feedback-error" th:text="${mensagemErro}"></p>
+          <p th:if="${mensagemSucesso}" class="feedback feedback-success" th:text="${mensagemSucesso}"></p>
+          <p th:if="${mensagemErroLocalizacao}" class="feedback feedback-error" th:text="${mensagemErroLocalizacao}"></p>
+          <p th:if="${mensagemSucessoLocalizacao}" class="feedback feedback-success" th:text="${mensagemSucessoLocalizacao}"></p>
+
           <section id="conta" class="settings-section">
             <div class="settings-section-heading">
               <div class="settings-icon"><i data-lucide="user-round"></i></div>
@@ -48,6 +55,83 @@
               <div><dt>E-mail</dt><dd th:text="${usuarioEmail}">usuario@example.com</dd></div>
               <div><dt>Conta criada em</dt><dd th:text="${usuarioCriadoEm} != null ? ${#temporals.format(usuarioCriadoEm, 'dd/MM/yyyy HH:mm')} : 'Não informado'">Não informado</dd></div>
             </dl>
+          </section>
+
+          <section id="senha" class="settings-section">
+            <div class="settings-section-heading">
+              <div class="settings-icon"><i data-lucide="key-round"></i></div>
+              <div><h2>Alterar senha</h2><p>Atualize a senha usada para acessar sua conta.</p></div>
+            </div>
+            <form th:action="@{/configuracoes/senha}" th:object="${alterarSenha}" method="post" class="password-change-form" data-validate>
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <div class="form-field">
+                <label for="senhaAtual">Senha atual</label>
+                <div class="password-input-wrapper">
+                  <input id="senhaAtual" th:field="*{senhaAtual}" type="password" required autocomplete="current-password">
+                  <button type="button" class="password-toggle" data-password-toggle data-password-target="#senhaAtual"
+                          aria-label="Mostrar senha atual" aria-pressed="false">
+                    <i data-lucide="eye" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-field">
+                <label for="novaSenha">Nova senha</label>
+                <div class="password-input-wrapper">
+                  <input id="novaSenha" th:field="*{novaSenha}" type="password" minlength="8" maxlength="100" required autocomplete="new-password">
+                  <button type="button" class="password-toggle" data-password-toggle data-password-target="#novaSenha"
+                          aria-label="Mostrar nova senha" aria-pressed="false">
+                    <i data-lucide="eye" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-field">
+                <label for="confirmarNovaSenha">Confirmar nova senha</label>
+                <div class="password-input-wrapper">
+                  <input id="confirmarNovaSenha" th:field="*{confirmarNovaSenha}" type="password" minlength="8" maxlength="100" required autocomplete="new-password">
+                  <button type="button" class="password-toggle" data-password-toggle data-password-target="#confirmarNovaSenha"
+                          aria-label="Mostrar confirmação da nova senha" aria-pressed="false">
+                    <i data-lucide="eye" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+              <button type="submit" class="primary-button"><i data-lucide="key-round"></i>Alterar senha</button>
+            </form>
+          </section>
+
+          <section id="localizacao" class="settings-section">
+            <div class="settings-section-heading">
+              <div class="settings-icon"><i data-lucide="map-pin"></i></div>
+              <div><h2>Localização da instalação</h2><p>Usada para identificar feriados estaduais e municipais disponíveis.</p></div>
+            </div>
+            <form th:action="@{/configuracoes/localizacao}" th:object="${localizacao}" method="post"
+                  class="location-form" data-location-form>
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <div class="form-field">
+                <label for="configUf">Estado</label>
+                <select id="configUf" th:field="*{uf}" data-location-state th:attr="data-selected=*{uf}" required>
+                  <option value="">Selecione um estado</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="configMunicipio">Município</label>
+                <select id="configMunicipio" th:field="*{municipio}" data-location-municipality
+                        th:attr="data-selected-name=*{municipio},data-selected-code=*{codigoIbge}" required disabled>
+                  <option value="">Selecione um município</option>
+                </select>
+                <input type="hidden" th:field="*{codigoIbge}" data-location-code>
+              </div>
+              <p class="location-status" data-location-message role="status">Os municípios são carregados pelo serviço oficial do IBGE.</p>
+              <button type="submit" class="primary-button"><i data-lucide="save"></i>Salvar localização</button>
+            </form>
+            <div class="location-coverage">
+              <strong>Cobertura regional verificada</strong>
+              <ul th:if="${!#lists.isEmpty(coberturaRegional)}">
+                <li th:each="cobertura : ${coberturaRegional}" th:text="${cobertura}"></li>
+              </ul>
+              <p th:if="${#lists.isEmpty(coberturaRegional)}">
+                Nenhum provedor estadual ou municipal validado para esta localização. Os feriados nacionais disponíveis continuam ativos.
+              </p>
+            </div>
           </section>
 
           <section id="sessao" class="settings-section">
@@ -71,7 +155,7 @@
             </div>
             <div class="settings-info-grid">
               <div><i data-lucide="database"></i><strong>Dados pessoais</strong><p>As informações são isoladas pela identidade autenticada.</p></div>
-              <div><i data-lucide="calendar-days"></i><strong>Feriados nacionais</strong><p>Consultados pela BrasilAPI por meio do backend.</p></div>
+              <div><i data-lucide="calendar-days"></i><strong>Feriados nacionais</strong><p>Dados da BrasilAPI filtrados por feriados nacionais previstos em lei.</p></div>
             </div>
           </section>
         </div>

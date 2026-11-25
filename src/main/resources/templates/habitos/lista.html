@@ -50,7 +50,7 @@
               <div class="row-icon"><i data-lucide="heart"></i></div>
               <div class="row-copy">
                 <strong th:text="${item.habito.nome}">Hábito</strong>
-                <p th:text="${item.habito.descricao} ?: 'Sem descrição'"></p>
+                <div class="markdown-content" data-markdown th:text="${item.habito.descricao} ?: 'Sem descrição'"></div>
                 <p><span th:text="${item.habito.frequencia}"></span> · <span th:text="${item.registros.size()} + ' registro(s) nos últimos 30 dias'"></span></p>
               </div>
             </div>
@@ -110,5 +110,6 @@
 <script src="https://unpkg.com/lucide@0.468.0"></script>
 <script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
 <script th:src="@{/js/pages/habitos.js}" src="/js/pages/habitos.js"></script>
+<script th:src="@{/js/components/markdown-renderer.js}" src="/js/components/markdown-renderer.js"></script>
 </body>
 </html>

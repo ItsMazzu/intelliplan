@@ -122,6 +122,37 @@ body { font-family: "DM Sans", sans-serif; }
   background: #d8a72f;
 }
 .calendar-date.selected:after { background: #fff; }
+.calendar-date > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dashboard-holiday-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+.dashboard-holiday-item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border-radius: 9px;
+  background: #fffaf0;
+  color: #80651f;
+  padding: 7px 9px;
+  font-size: 11px;
+}
+.dashboard-holiday-item strong { font-size: 11px; }
+.dashboard-holiday-item small { color: #887a97; font-size: 9px; }
+.dashboard-holiday-item.estadual { background: #f1edfc; color: #6840ad; }
+.dashboard-holiday-item.municipal { background: #eaf5ee; color: #47785e; }
+.calendar-date.is-holiday.estadual { border-color: #9c83d6; background: #f7f3ff; color: #6840ad; }
+.calendar-date.is-holiday.municipal { border-color: #7eb18e; background: #f2faf4; color: #47785e; }
+.calendar-date.is-facultative { border: 1px dashed #d8a72f; background: #fffaf0; color: #80651f; }
+.calendar-date.is-facultative:after { background: #d8a72f; }
+.dashboard-holiday-item.ponto_facultativo { border: 1px dashed #e2c76e; background: #fffaf0; color: #80651f; }
 .calendar-arrow { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 50%; color: #8b79a0; }
 .calendar-arrow:hover { background: #f4eff8; }
 

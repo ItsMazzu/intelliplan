@@ -62,7 +62,7 @@
               <div class="row-icon"><i data-lucide="folder-kanban"></i></div>
               <div class="row-copy">
                 <strong th:text="${projeto.nome}">Projeto</strong>
-                <p th:text="${projeto.descricao} ?: 'Sem descrição'">Descrição</p>
+                <div class="markdown-content" data-markdown th:text="${projeto.descricao} ?: 'Sem descrição'">Descrição</div>
                 <p th:if="${projeto.dataConclusao}">Conclusão prevista: <span th:text="${#temporals.format(projeto.dataConclusao, 'dd/MM/yyyy')}"></span></p>
               </div>
             </div>
@@ -85,5 +85,6 @@
 </div>
 <script src="https://unpkg.com/lucide@0.468.0"></script>
 <script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/components/markdown-renderer.js}" src="/js/components/markdown-renderer.js"></script>
 </body>
 </html>

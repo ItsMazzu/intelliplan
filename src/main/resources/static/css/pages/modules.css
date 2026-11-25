@@ -423,9 +423,37 @@
   font-weight: 800;
 }
 
+.calendar-holiday small {
+  display: block;
+  margin-top: 2px;
+  font-size: 8px;
+  font-weight: 700;
+}
+
 .calendar-day.is-holiday {
   border-color: #e6c65f;
   background: #fffdf7;
+}
+
+.calendar-day.is-holiday.estadual .calendar-holiday {
+  background: #eee5fb;
+  color: #6840ad;
+}
+
+.calendar-day.is-holiday.municipal .calendar-holiday {
+  background: #e6f2e8;
+  color: #47785e;
+}
+
+.calendar-day.is-facultative {
+  border-style: dashed;
+  border-color: #e6c65f;
+  background: #fffdf7;
+}
+
+.calendar-day.is-facultative .calendar-holiday {
+  background: #fff1cf;
+  color: #80651f;
 }
 
 .login-page {

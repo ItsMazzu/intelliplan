@@ -2,6 +2,8 @@
 
 Este documento consolida a evolução cronológica do projeto **IntelliPlan — Organizador Pessoal Inteligente**, mapeando os commits do repositório Git, as etapas cumpridas, os desafios técnicos enfrentados e as soluções arquiteturais adotadas.
 
+> Este é um registro histórico, não uma especificação do estado atual. A tabela abaixo documenta commits até 24/11/2026 e não pretende cobrir alterações posteriores. Para arquitetura, rotas e comportamento vigentes, consulte o [Guia Técnico](GUIA_TECNICO.md) e o [README](../README.md).
+
 ---
 
 ## 1. Rastreabilidade dos Commits no Repositório Git
@@ -87,30 +89,30 @@ A tabela abaixo correlaciona os registros do histórico de versionamento às fas
 ### Fase 6: Finalização do Backend e Integrações Reais
 - **Objetivo:** Auditar, corrigir inconsistências, integrar serviços externos e conectar dados reais à interface.
 - **Ações Implementadas:**
-  1. **Substituição da Estratégia de Contexto de Usuário:**
+  1. **Substituição da Estratégia de Contexto de Usuário (registro da fase):**
      - O mecanismo anterior utilizava leitura frágil de cabeçalho `X-Usuario-Id` e busca arbitrária pelo primeiro usuário do banco.
      - Foi substituído pela resolução do usuário autenticado pelo e-mail do principal do Spring Security.
      - O `UsuarioContextService` consulta o usuário correspondente no repositório e não depende de identificadores fixos.
-     - O cadastro público por `POST /api/v1/usuarios` foi removido; a conta principal só pode ser criada pelo assistente de primeira execução.
+     - O cadastro público por `POST /api/v1/usuarios` foi removido. No estado documentado pela fase, a conta inicial era criada pelo assistente de instalação; a política posterior de criação de contas está descrita no [Guia Técnico](GUIA_TECNICO.md).
   2. **Integração com a BrasilAPI:**
      - Criação do pacote `com.planner.integracao.feriados`.
      - Implementação de `BrasilApiClient` usando `RestClient` nativo do Spring com timeouts de 3s (conexão) e 5s (leitura).
-     - Implementação de `FeriadoService` com captura defensiva de falhas de rede, registrando logs em `WARN` e retornando lista vazia sem quebrar a aplicação.
+     - Implementação de `FeriadoService` com tratamento de falhas de rede, registrando logs e mantendo a aplicação disponível. A política atual de consolidação parcial e cache está descrita no [Guia Técnico](GUIA_TECNICO.md).
      - Exposição do endpoint `GET /api/v1/feriados/{ano}` com documentação OpenAPI.
   3. **Conexão Real do Dashboard (`DashboardService`):**
      - O `DashboardController` deixou de ser um simples visualizador estático e passou a delegar ao `DashboardService`.
-     - Foram populadas todas as 16 variáveis demandadas pelo Thymeleaf (`usuarioNome`, `primeiroNome`, contadores, listas e métricas de progresso).
+     - Foram populados os atributos demandados pelo Thymeleaf naquela versão (`usuarioNome`, `primeiroNome`, contadores, listas e métricas de progresso). A composição atual do model está descrita no [Guia Técnico](GUIA_TECNICO.md).
      - Integração do calendário mensal com os feriados nacionais obtidos da BrasilAPI e os compromissos do usuário.
      - Implementação de tratamento defensivo: em caso de banco de dados vazio ou usuário sem dados cadastrados, a aplicação exibe a tela com valores zerados e mensagens amigáveis sem lançar erro 500.
      - Adição do endpoint MVC `POST /tarefas/{id}/concluir` para suporte à alternância de status diretamente na tela. A rota REST de tarefas foi removida posteriormente quando o módulo passou a usar controller MVC.
 
-### Fase 7: Interface MVC para Tarefas
+### Fase 7: Interface MVC para Tarefas e registro da segurança naquele estágio
 - **Objetivo:** Disponibilizar o gerenciamento de tarefas na interface Thymeleaf.
 - **Ações registradas no histórico Git:**
   - Substituição do controller REST de tarefas por `TarefaViewController`, com listagem, filtros, criação, edição e exclusão via MVC.
   - Inclusão dos templates de listagem e formulário, além de ajustes na navegação lateral.
   - Retorno à página de referência após alternar o status de conclusão.
-- **Estado de segurança:** a aplicação ainda usa `app.dev.usuario-id` como contexto local. O `SecurityConfig` permite todas as requisições e desabilita CSRF; não há autenticação ativa. A configuração atual é de desenvolvimento e não deve ser exposta publicamente.
+- **Registro histórico de segurança:** esta fase corresponde ao estágio retratado pelos commits listados nesta seção. A menção a `app.dev.usuario-id`, `permitAll()` e CSRF desabilitado não descreve a configuração atual; consulte a seção de autenticação e autorização do [Guia Técnico](GUIA_TECNICO.md).
 
 ---
 

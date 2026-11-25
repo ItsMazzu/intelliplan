@@ -55,7 +55,13 @@
             </div>
             <div class="form-field setup-field-full">
               <label for="senhaBanco">Senha do banco</label>
-              <input id="senhaBanco" th:field="*{senha}" type="password" autocomplete="current-password">
+              <div class="password-input-wrapper">
+                <input id="senhaBanco" th:field="*{senha}" type="password" autocomplete="current-password">
+                <button type="button" class="password-toggle" data-password-toggle data-password-target="#senhaBanco"
+                        aria-label="Mostrar senha do banco" aria-pressed="false">
+                  <i data-lucide="eye" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
           </div>
           <button type="submit" class="primary-button">Testar conexão</button>
@@ -83,13 +89,43 @@
               <label for="emailConta">E-mail</label>
               <input id="emailConta" th:field="*{email}" type="email" required maxlength="200" autocomplete="email">
             </div>
+            <div class="form-field" th:if="${!instalacaoConcluida}">
+              <label for="setupUf">Estado</label>
+              <select id="setupUf" th:field="*{uf}" data-location-state
+                      th:attr="data-selected=*{uf}" th:required="${localizacaoObrigatoria}">
+                <option value="">Selecione um estado</option>
+              </select>
+            </div>
+            <div class="form-field" th:if="${!instalacaoConcluida}">
+              <label for="setupMunicipio">Município</label>
+              <select id="setupMunicipio" th:field="*{municipio}" data-location-municipality
+                      th:attr="data-selected-name=*{municipio},data-selected-code=*{codigoIbge}"
+                      th:required="${localizacaoObrigatoria}" disabled>
+                <option value="">Selecione um município</option>
+              </select>
+              <input type="hidden" th:field="*{codigoIbge}" data-location-code>
+            </div>
+            <p class="form-field setup-field-full location-status" data-location-message role="status"
+               th:if="${!instalacaoConcluida}">Os municípios são carregados pelo serviço oficial do IBGE.</p>
             <div class="form-field">
               <label for="senhaConta">Senha</label>
-              <input id="senhaConta" th:field="*{senha}" type="password" minlength="8" maxlength="100" required autocomplete="new-password">
+              <div class="password-input-wrapper">
+                <input id="senhaConta" th:field="*{senha}" type="password" minlength="8" maxlength="100" required autocomplete="new-password">
+                <button type="button" class="password-toggle" data-password-toggle data-password-target="#senhaConta"
+                        aria-label="Mostrar senha" aria-pressed="false">
+                  <i data-lucide="eye" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
             <div class="form-field">
               <label for="confirmarSenha">Confirmar senha</label>
-              <input id="confirmarSenha" th:field="*{confirmarSenha}" type="password" minlength="8" maxlength="100" required autocomplete="new-password">
+              <div class="password-input-wrapper">
+                <input id="confirmarSenha" th:field="*{confirmarSenha}" type="password" minlength="8" maxlength="100" required autocomplete="new-password">
+                <button type="button" class="password-toggle" data-password-toggle data-password-target="#confirmarSenha"
+                        aria-label="Mostrar confirmação de senha" aria-pressed="false">
+                  <i data-lucide="eye" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
           </div>
           <button type="submit" class="primary-button"
@@ -99,5 +135,7 @@
     </section>
   </div>
 </main>
+<script src="https://unpkg.com/lucide@0.468.0"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
 </body>
 </html>

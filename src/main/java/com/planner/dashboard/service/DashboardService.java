@@ -170,14 +170,18 @@ public class DashboardService {
             LocalDate dataDia = LocalDate.of(hoje.getYear(), hoje.getMonth(), dia);
             boolean isHoje = dataDia.equals(hoje);
             FeriadoDTO feriado = feriadosDoMes.get(dataDia);
-            boolean temFeriado = feriado != null;
-            boolean temEvento = datasComCompromisso.contains(dataDia) || temFeriado;
+            boolean temFeriado = feriado != null && !feriado.somentePontoFacultativo();
+            boolean temPontoFacultativo = feriado != null && feriado.somentePontoFacultativo();
+            boolean temEvento = datasComCompromisso.contains(dataDia) || feriado != null;
             diasCalendario.add(new DiaCalendarioDTO(
                     dia,
                     isHoje,
                     temEvento,
                     temFeriado,
-                    feriado != null ? feriado.name() : null
+                    temPontoFacultativo,
+                    feriado != null ? feriado.name() : null,
+                    feriado != null ? feriado.descricaoCategorias() : null,
+                    feriado != null ? feriado.categoriasCss() : null
             ));
         }
 
@@ -305,13 +309,17 @@ public class DashboardService {
             LocalDate dataDia = LocalDate.of(hoje.getYear(), hoje.getMonth(), dia);
             boolean isHoje = dataDia.equals(hoje);
             FeriadoDTO feriado = feriadosDoMes.get(dataDia);
-            boolean temFeriado = feriado != null;
+            boolean temFeriado = feriado != null && !feriado.somentePontoFacultativo();
+            boolean temPontoFacultativo = feriado != null && feriado.somentePontoFacultativo();
             diasCalendario.add(new DiaCalendarioDTO(
                     dia,
                     isHoje,
+                    temFeriado || temPontoFacultativo,
                     temFeriado,
-                    temFeriado,
-                    feriado != null ? feriado.name() : null
+                    temPontoFacultativo,
+                    feriado != null ? feriado.name() : null,
+                    feriado != null ? feriado.descricaoCategorias() : null,
+                    feriado != null ? feriado.categoriasCss() : null
             ));
         }
 

@@ -30,10 +30,17 @@
         </div>
         <div class="form-field login-password-field">
           <label for="senha">Senha</label>
-          <input id="senha" name="senha" type="password" required autocomplete="current-password" placeholder="Sua senha">
+          <div class="password-input-wrapper">
+            <input id="senha" name="senha" type="password" required autocomplete="current-password" placeholder="Sua senha">
+            <button type="button" class="password-toggle" data-password-toggle data-password-target="#senha"
+                    aria-label="Mostrar senha" aria-pressed="false">
+              <i data-lucide="eye" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
         <p th:if="${param.erro}" class="login-note">E-mail ou senha inválidos.</p>
         <p th:if="${param.logout}" class="login-note">Você saiu da aplicação.</p>
+        <p th:if="${param.senhaAlterada}" class="login-note">Senha alterada com sucesso! Entre com a nova senha.</p>
         <p th:if="${param.instalacao}" class="login-note">Instalação concluída! Acesse com sua conta principal.</p>
         <p th:if="${param.cadastro}" class="login-note">Conta criada! Entre com seu novo usuário.</p>
         <button type="submit" class="primary-button"><i data-lucide="log-in"></i><span>Entrar</span></button>
