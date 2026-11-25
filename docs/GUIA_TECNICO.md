@@ -6,7 +6,7 @@ Este documento apresenta a especificação técnica detalhada da arquitetura, do
 
 ## 1. Visão Geral e Estilo Arquitetural
 
-O IntelliPlan é estruturado como um monolito modular baseado em **Java 21** e **Spring Boot 4.1.2**, utilizando persistência relacional com **PostgreSQL** e **Spring Data JPA / Hibernate**, empacotado no formato **WAR (Web Application Archive)**.
+O IntelliPlan é estruturado como um monolito modular baseado em **Java 21** e **Spring Boot 4.1.2**, utilizando persistência relacional com **PostgreSQL 18** e **Spring Data JPA / Hibernate**, empacotado no formato **WAR (Web Application Archive)**.
 
 A aplicação atende simultaneamente a dois canais de consumo:
 1. **Interface Web Server-Side:** Renderizada com **Thymeleaf**, **Tailwind CSS** (via CDN) e **JavaScript vanilla** para interação no navegador.
@@ -107,7 +107,7 @@ sequenceDiagram
         Exc-->>Cliente: 400 Bad Request (ProblemDetail RFC 7807)
     else Dados válidos
         Ctrl->>Ctx: obterUsuarioIdAtual()
-        Ctx-->>Ctrl: usuarioId (resolvido via app.dev.usuario-id)
+        Ctx-->>Ctrl: usuarioId (resolvido pelo principal autenticado)
         Ctrl->>Svc: criar(usuarioId, dto)
         Svc->>UsrSvc: buscarEntidadePorId(usuarioId)
         UsrSvc-->>Svc: Usuario
@@ -182,30 +182,25 @@ O modelo de dados é composto por 8 entidades relacionais com integridade refere
 
 ## 5. Resolução de Contexto do Usuário (`UsuarioContextService`)
 
-Para o estágio atual de desenvolvimento local (sem tela de login ou tokens JWT ativados), a identificação do usuário em requisições REST e na interface web é gerenciada de forma centralizada pelo `UsuarioContextService`:
+A identificação do usuário em requisições REST e na interface web é obtida pelo principal autenticado no Spring Security:
 
 ```java
 @Component
 public class UsuarioContextService {
-    private final Long devUsuarioId;
     private final UsuarioRepository usuarioRepository;
-    // Injeção de app.dev.usuario-id e UsuarioRepository via construtor
+    // O e-mail do Authentication é usado para localizar o usuário.
 }
 ```
 
 ### Regras de Funcionamento
 
-1. **Configuração via Propriedade:** O arquivo `application.properties` declara:
-   ```properties
-   app.dev.usuario-id=1
-   ```
+1. **Fonte de identidade:** `SecurityContextHolder` fornece o `Authentication` da sessão atual.
 2. **Método `obterUsuarioIdAtual()`:**
-   - Se `app.dev.usuario-id` estiver ausente ou nulo: lança `BusinessRuleException` informando a necessidade de configurar a propriedade.
-   - Se o identificador configurado não existir no banco de dados: lança `ResourceNotFoundException` explicitando o ID ausente.
-   - Se existir: retorna o `Long` correspondente para uso pelos Services.
+   - Se não houver autenticação válida: lança `BusinessRuleException`.
+   - Se o e-mail autenticado existir no banco: retorna o `Long` correspondente.
 3. **Método `obterUsuarioIdOpcional()`:**
    - Retorna `Optional<Long>`.
-   - Se a propriedade não estiver configurada ou o ID não existir, retorna `Optional.empty()`.
+   - Sem principal autenticado ou sem usuário correspondente, retorna `Optional.empty()`.
    - Utilizado pelo `DashboardService` para renderização defensiva com valores padrão sem estourar exceções na interface.
 4. **Isenção de Endpoints Públicos:**
    - O cadastro de usuários (`POST /api/v1/usuarios`) não injeta nem consome o `UsuarioContextService`, permitindo o bootstrapping inicial de contas sem contexto prévio.

@@ -1,6 +1,7 @@
 package com.planner.dashboard.controller;
 
 import com.planner.common.context.UsuarioContextService;
+import com.planner.common.exception.ResourceNotFoundException;
 import com.planner.dashboard.dto.DashboardDadosDTO;
 import com.planner.dashboard.service.DashboardService;
 import com.planner.tarefa.service.TarefaService;
@@ -9,7 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Optional;
 
 @Controller
 public class DashboardController {
@@ -30,6 +33,7 @@ public class DashboardController {
     public String dashboard(Model model) {
         DashboardDadosDTO dados = dashboardService.obterDadosDashboard();
         model.addAttribute("usuarioNome", dados.usuarioNome());
+        model.addAttribute("usuarioIniciais", iniciais(dados.usuarioNome()));
         model.addAttribute("primeiroNome", dados.primeiroNome());
         model.addAttribute("totalTarefas", dados.totalTarefas());
         model.addAttribute("totalProjetos", dados.totalProjetos());
@@ -48,11 +52,28 @@ public class DashboardController {
         return "dashboard/dashboard";
     }
 
+    private String iniciais(String nome) {
+        if (nome == null || nome.isBlank()) return "U";
+        String[] partes = nome.trim().split("\\s+");
+        return partes.length == 1
+                ? partes[0].substring(0, 1).toUpperCase()
+                : (partes[0].substring(0, 1) + partes[partes.length - 1].substring(0, 1)).toUpperCase();
+    }
+
     @PostMapping("/tarefas/{id}/concluir")
     public String alternarConclusaoTarefa(@PathVariable Long id,
-                                          @RequestHeader(value = "Referer", required = false) String referer) {
-        usuarioContextService.obterUsuarioIdOpcional().ifPresent(usuarioId ->
-                tarefaService.alternarConclusao(usuarioId, id));
-        return (referer != null && !referer.isBlank()) ? "redirect:" + referer : "redirect:/";
+                                          RedirectAttributes redirectAttributes) {
+        Optional<Long> usuarioIdOpt = usuarioContextService.obterUsuarioIdOpcional();
+        if (usuarioIdOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário de desenvolvimento não configurado.");
+            return "redirect:/tarefas";
+        }
+        try {
+            tarefaService.alternarConclusao(usuarioIdOpt.get(), id);
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Status da tarefa atualizado!");
+        } catch (ResourceNotFoundException ex) {
+            redirectAttributes.addFlashAttribute("mensagemErro", ex.getMessage());
+        }
+        return "redirect:/tarefas";
     }
 }

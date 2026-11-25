@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="sidebar" class="profile-menu-wrapper mt-auto border-t border-white/10 px-5 py-5">
+  <button type="button" class="profile-menu-trigger flex w-full items-center gap-3 text-left"
+          data-profile-toggle aria-expanded="false" aria-controls="profile-menu-sidebar">
+    <div class="avatar" th:text="${perfilUsuarioIniciais} ?: 'U'">U</div>
+    <div class="min-w-0">
+      <p class="truncate text-sm font-semibold" th:text="${perfilUsuarioNome} ?: 'Usuário'">Usuário</p>
+      <p class="text-xs text-purple-200/70">Meu espaço</p>
+    </div>
+    <i data-lucide="chevron-up" class="ml-auto h-4 w-4 text-purple-200"></i>
+  </button>
+  <div id="profile-menu-sidebar" class="profile-menu" data-profile-menu aria-hidden="true">
+    <a th:href="@{/configuracoes}" href="/configuracoes"><i data-lucide="settings"></i><span>Configurações</span></a>
+    <form th:action="@{/logout}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <button type="submit"><i data-lucide="log-out"></i><span>Sair da conta</span></button>
+    </form>
+  </div>
+</div>
+
+<div th:fragment="topbar" class="profile-menu-wrapper profile-menu-wrapper-topbar">
+  <button type="button" class="profile-menu-trigger flex items-center gap-2 rounded-full px-2 py-1 hover:bg-purple-50"
+          data-profile-toggle aria-expanded="false" aria-controls="profile-menu-topbar">
+    <div class="avatar avatar-small" th:text="${perfilUsuarioIniciais} ?: 'U'">U</div>
+    <span class="hidden text-sm font-semibold sm:inline" th:text="${perfilUsuarioNome} ?: 'Usuário'">Usuário</span>
+    <i data-lucide="chevron-down" class="h-4 w-4"></i>
+  </button>
+  <div id="profile-menu-topbar" class="profile-menu" data-profile-menu aria-hidden="true">
+    <a th:href="@{/configuracoes}" href="/configuracoes"><i data-lucide="settings"></i><span>Configurações</span></a>
+    <form th:action="@{/logout}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <button type="submit"><i data-lucide="log-out"></i><span>Sair da conta</span></button>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

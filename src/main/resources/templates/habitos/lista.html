@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliPlan | Hábitos</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/pages/modules.css}" href="/css/pages/modules.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+  <div th:replace="~{fragments/sidebar :: sidebar('habitos')}"></div>
+  <main class="module-main">
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+    <div class="module-content">
+      <div th:if="${mensagemSucesso}" class="feedback feedback-success"><i data-lucide="circle-check"></i><span th:text="${mensagemSucesso}"></span></div>
+      <div th:if="${mensagemErro}" class="feedback feedback-error"><i data-lucide="circle-alert"></i><span th:text="${mensagemErro}"></span></div>
+      <div class="page-heading">
+        <div><h1>Hábitos</h1><p>Registre realizações e acompanhe a frequência.</p></div>
+        <a th:href="@{/habitos/novo}" class="primary-button"><i data-lucide="heart-plus"></i><span>Novo hábito</span></a>
+      </div>
+
+      <section class="stats-grid">
+        <article class="stat-card"><div class="stat-icon"><i data-lucide="heart"></i></div><div><strong th:text="${totalHabitos} ?: 0">0</strong><span>Hábitos</span></div></article>
+        <article class="stat-card"><div class="stat-icon"><i data-lucide="activity"></i></div><div><strong th:text="${habitosAtivos} ?: 0">0</strong><span>Ativos</span></div></article>
+        <article class="stat-card"><div class="stat-icon"><i data-lucide="circle-check"></i></div><div><strong th:text="${concluidosHoje} ?: 0">0</strong><span>Concluídos hoje</span></div></article>
+      </section>
+
+      <form th:action="@{/habitos}" method="get" class="toolbar">
+        <label class="secondary-button">
+          <input type="checkbox" name="apenasAtivos" value="true" th:checked="${apenasAtivos}">
+          <span>Somente ativos</span>
+        </label>
+        <button type="submit" class="primary-button"><i data-lucide="filter"></i><span>Filtrar</span></button>
+      </form>
+
+      <section id="module-list" class="content-panel">
+        <div class="panel-heading"><h2><i data-lucide="repeat-2"></i>Hábitos cadastrados</h2></div>
+        <div th:if="${#lists.isEmpty(habitos)}" class="empty-state">
+          <div class="empty-state-icon"><i data-lucide="heart"></i></div>
+          <h3>Nenhum hábito encontrado</h3>
+          <p>Cadastre uma rotina e registre suas realizações diárias.</p>
+          <a th:href="@{/habitos/novo}" class="primary-button"><i data-lucide="plus"></i><span>Criar hábito</span></a>
+        </div>
+        <div th:if="${!#lists.isEmpty(habitos)}" class="data-list">
+          <article th:each="item : ${habitosResumo}" class="data-row" th:attr="data-searchable=${item.habito.nome + ' ' + item.habito.descricao}">
+            <div class="row-main">
+              <div class="row-icon"><i data-lucide="heart"></i></div>
+              <div class="row-copy">
+                <strong th:text="${item.habito.nome}">Hábito</strong>
+                <p th:text="${item.habito.descricao} ?: 'Sem descrição'"></p>
+                <p><span th:text="${item.habito.frequencia}"></span> · <span th:text="${item.registros.size()} + ' registro(s) nos últimos 30 dias'"></span></p>
+              </div>
+            </div>
+            <div class="row-actions">
+              <span th:if="${item.habito.ativo}" class="badge badge-green">Ativo</span>
+              <span th:if="${!item.habito.ativo}" class="badge badge-slate">Inativo</span>
+              <span th:if="${item.concluidoHoje}" class="badge badge-green">Feito hoje</span>
+              <form th:if="${item.habito.ativo}" th:action="@{/habitos/{id}/registrar(id=${item.habito.id})}" method="post">
+                <input type="hidden" name="dataRegistro" th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+                <button type="submit" class="soft-button"><i data-lucide="check"></i><span>Registrar hoje</span></button>
+              </form>
+              <form th:if="${item.habito.ativo}" th:action="@{/habitos/{id}/desativar(id=${item.habito.id})}" method="post">
+                <button type="submit" class="icon-button" title="Desativar"><i data-lucide="pause"></i></button>
+              </form>
+              <form th:if="${!item.habito.ativo}" th:action="@{/habitos/{id}/ativar(id=${item.habito.id})}" method="post">
+                <button type="submit" class="icon-button" title="Ativar"><i data-lucide="play"></i></button>
+              </form>
+              <a th:href="@{/habitos/{id}/editar(id=${item.habito.id})}" class="icon-button" title="Editar"><i data-lucide="pencil"></i></a>
+              <form th:action="@{/habitos/{id}/excluir(id=${item.habito.id})}" method="post">
+                <button type="submit" class="icon-button" data-confirm="Deseja excluir este hábito?" title="Excluir"><i data-lucide="trash-2"></i></button>
+              </form>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section th:if="${!#lists.isEmpty(habitosResumo)}" class="content-panel habit-history">
+        <div class="panel-heading"><h2><i data-lucide="calendar-check"></i>Histórico recente</h2></div>
+        <div th:each="item : ${habitosResumo}" class="form-body">
+          <div class="habit-history-heading">
+            <strong th:text="${item.habito.nome}">Hábito</strong>
+            <div class="progress-row">
+              <div class="progress-track"><span th:style="'width:' + ${item.progresso} + '%'"></span></div>
+              <small th:text="${item.progresso} + '%'">0%</small>
+            </div>
+          </div>
+          <div th:if="${#lists.isEmpty(item.registros)}" class="row-copy habit-history-records"><p>Nenhum registro nos últimos 30 dias.</p></div>
+          <div th:if="${!#lists.isEmpty(item.registros)}" class="data-list habit-history-records">
+            <article th:each="registro : ${item.registros}" class="data-row">
+              <div class="row-main">
+                <div class="row-icon"><i data-lucide="check"></i></div>
+                <div class="row-copy">
+                  <strong th:text="${#temporals.format(registro.dataRegistro, 'dd/MM/yyyy')}">Data</strong>
+                  <p th:text="${registro.observacao} ?: 'Realização registrada'"></p>
+                </div>
+              </div>
+              <form th:action="@{/habitos/registros/{registroId}/excluir(registroId=${registro.id})}" method="post">
+                <button type="submit" class="icon-button" data-confirm="Deseja excluir este registro?" title="Excluir registro"><i data-lucide="trash-2"></i></button>
+              </form>
+            </article>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="https://unpkg.com/lucide@0.468.0"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/pages/habitos.js}" src="/js/pages/habitos.js"></script>
+</body>
+</html>

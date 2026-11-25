@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="'IntelliPlan | ' + ${materia.nome}">IntelliPlan | Estudos</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/pages/modules.css}" href="/css/pages/modules.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+  <div th:replace="~{fragments/sidebar :: sidebar('estudos')}"></div>
+  <main class="module-main">
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+    <div class="module-content">
+      <div th:if="${mensagemSucesso}" class="feedback feedback-success"><i data-lucide="circle-check"></i><span th:text="${mensagemSucesso}"></span></div>
+      <div th:if="${mensagemErro}" class="feedback feedback-error"><i data-lucide="circle-alert"></i><span th:text="${mensagemErro}"></span></div>
+      <div class="page-heading">
+        <div><h1 th:text="${materia.nome}">Matéria</h1><p th:text="${materia.descricao} ?: 'Conteúdos de estudo da matéria.'"></p></div>
+        <div class="row-actions">
+          <a th:href="@{/estudos}" class="secondary-button"><i data-lucide="arrow-left"></i><span>Voltar</span></a>
+          <a th:href="@{/estudos/{materiaId}/conteudos/novo(materiaId=${materia.id})}" class="primary-button"><i data-lucide="plus"></i><span>Novo conteúdo</span></a>
+        </div>
+      </div>
+
+      <section class="detail-grid">
+        <div class="content-panel">
+          <div class="panel-heading">
+            <h2><i data-lucide="library"></i>Conteúdos</h2>
+            <span class="badge badge-violet" th:text="${#lists.size(conteudos)} + ' conteúdo(s)'">0 conteúdos</span>
+          </div>
+          <div th:if="${#lists.isEmpty(conteudos)}" class="empty-state">
+            <div class="empty-state-icon"><i data-lucide="book-open"></i></div>
+            <h3>Nenhum conteúdo cadastrado</h3>
+            <p>Inclua capítulos, tópicos ou atividades desta matéria.</p>
+          </div>
+          <div th:if="${!#lists.isEmpty(conteudos)}" class="data-list">
+            <article th:each="conteudo : ${conteudos}" class="data-row" th:attr="data-searchable=${conteudo.titulo + ' ' + conteudo.descricao}">
+              <div class="row-main">
+                <div class="row-icon"><i data-lucide="book-open"></i></div>
+                <div class="row-copy"><strong th:text="${conteudo.titulo}">Conteúdo</strong><p th:text="${conteudo.descricao} ?: 'Sem descrição'"></p></div>
+              </div>
+              <div class="row-actions">
+                <span th:if="${conteudo.status.name() == 'NAO_INICIADO'}" class="badge badge-slate">Não iniciado</span>
+                <span th:if="${conteudo.status.name() == 'EM_ANDAMENTO'}" class="badge badge-blue">Em andamento</span>
+                <span th:if="${conteudo.status.name() == 'CONCLUIDO'}" class="badge badge-green">Concluído</span>
+                <a th:href="@{/estudos/{materiaId}/conteudos/{conteudoId}/editar(materiaId=${materia.id},conteudoId=${conteudo.id})}" class="icon-button" title="Editar"><i data-lucide="pencil"></i></a>
+                <form th:action="@{/estudos/{materiaId}/conteudos/{conteudoId}/excluir(materiaId=${materia.id},conteudoId=${conteudo.id})}" method="post">
+                  <button type="submit" class="icon-button" data-confirm="Deseja excluir este conteúdo?" title="Excluir"><i data-lucide="trash-2"></i></button>
+                </form>
+              </div>
+            </article>
+          </div>
+        </div>
+        <aside class="content-panel">
+          <div class="panel-heading"><h3><i data-lucide="chart-pie"></i>Progresso da matéria</h3></div>
+          <div class="form-body">
+            <div class="progress-row"><div class="progress-track"><span th:style="'width:' + ${progressoMateria} + '%'"></span></div><strong th:text="${progressoMateria} + '%'">0%</strong></div>
+          </div>
+        </aside>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="https://unpkg.com/lucide@0.468.0"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+</body>
+</html>

@@ -16,6 +16,19 @@ public interface CompromissoRepository extends JpaRepository<Compromisso, Long> 
             select compromisso
             from Compromisso compromisso
             where compromisso.usuario.id = :usuarioId
+              and compromisso.dataHoraInicio between :inicio and :fim
+            order by compromisso.dataHoraInicio
+            """)
+    List<Compromisso> findUpcomingByUsuarioId(
+            @Param("usuarioId") Long usuarioId,
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
+
+    @Query("""
+            select compromisso
+            from Compromisso compromisso
+            where compromisso.usuario.id = :usuarioId
               and compromisso.dataHoraInicio <= :fim
               and (compromisso.dataHoraFim is null or compromisso.dataHoraFim >= :inicio)
             """)

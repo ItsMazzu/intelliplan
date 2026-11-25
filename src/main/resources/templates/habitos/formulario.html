@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${modoEdicao} ? 'IntelliPlan | Editar Hábito' : 'IntelliPlan | Novo Hábito'">IntelliPlan | Hábitos</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="stylesheet" th:href="@{/css/base/customstyles.css}" href="/css/base/customstyles.css">
+  <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" th:href="@{/css/pages/modules.css}" href="/css/pages/modules.css">
+</head>
+<body class="min-h-screen bg-mist text-ink">
+<div class="min-h-screen lg:flex">
+  <div th:replace="~{fragments/sidebar :: sidebar('habitos')}"></div>
+  <main class="module-main">
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
+    <div class="module-content">
+      <div th:if="${mensagemErro}" class="feedback feedback-error"><i data-lucide="circle-alert"></i><span th:text="${mensagemErro}"></span></div>
+      <div class="page-heading"><div><h1 th:text="${modoEdicao} ? 'Editar hábito' : 'Novo hábito'">Hábito</h1><p>Configure o nome, a descrição e a frequência.</p></div></div>
+      <section class="content-panel form-panel">
+        <div class="panel-heading"><h2><i data-lucide="heart"></i>Dados do hábito</h2></div>
+        <form th:action="${modoEdicao} ? @{/habitos/{id}/editar(id=${habitoId})} : @{/habitos}"
+              th:object="${habitoForm}" method="post" data-validate class="form-body">
+          <div class="form-grid">
+            <div class="form-field full">
+              <label for="nome">Nome *</label>
+              <input id="nome" th:field="*{nome}" required maxlength="200" placeholder="Ex.: Beber água">
+              <p th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}" class="validation-error"></p>
+            </div>
+            <div class="form-field full">
+              <label for="descricao">Descrição</label>
+              <textarea id="descricao" th:field="*{descricao}" placeholder="Observações sobre o hábito"></textarea>
+            </div>
+            <div class="form-field">
+              <label for="frequencia">Frequência *</label>
+              <select id="frequencia" th:field="*{frequencia}" required>
+                <option th:each="frequencia : ${frequenciaOpcoes}" th:value="${frequencia}" th:text="${frequencia}"></option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <a th:href="@{/habitos}" class="secondary-button">Cancelar</a>
+            <button type="submit" class="primary-button"><i data-lucide="check"></i><span th:text="${modoEdicao} ? 'Salvar alterações' : 'Criar hábito'"></span></button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="https://unpkg.com/lucide@0.468.0"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+</body>
+</html>

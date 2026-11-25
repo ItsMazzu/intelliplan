@@ -1,6 +1,8 @@
 package com.planner.tarefa.controller;
 
 import com.planner.common.context.UsuarioContextService;
+import com.planner.common.exception.BusinessRuleException;
+import com.planner.common.exception.ResourceNotFoundException;
 import com.planner.projeto.dto.ProjetoResponseDTO;
 import com.planner.projeto.service.ProjetoService;
 import com.planner.tarefa.dto.TarefaRequestDTO;
@@ -14,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,7 +27,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -60,7 +65,17 @@ public class TarefaViewController {
 
         Long usuarioId = usuarioIdOpt.get();
         UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
-        List<TarefaResponseDTO> tarefas = tarefaService.listarComFiltros(usuarioId, status, projetoId, inicio, fim);
+        List<TarefaResponseDTO> tarefas;
+        try {
+            tarefas = tarefaService.listarComFiltros(usuarioId, status, projetoId, inicio, fim);
+        } catch (BusinessRuleException ex) {
+            model.addAttribute("mensagemErro", ex.getMessage());
+            tarefas = Collections.emptyList();
+            status = null;
+            projetoId = null;
+            inicio = null;
+            fim = null;
+        }
         List<ProjetoResponseDTO> projetos = projetoService.listarPorUsuario(usuarioId);
 
         List<TarefaResponseDTO> todasDoUsuario = tarefaService.listarPorUsuario(usuarioId);
@@ -73,6 +88,9 @@ public class TarefaViewController {
         model.addAttribute("primeiroNome", extrairPrimeiroNome(usuario.nome()));
         model.addAttribute("tarefas", tarefas);
         model.addAttribute("projetos", projetos);
+        Map<Long, String> nomesProjetos = new HashMap<>();
+        projetos.forEach(projeto -> nomesProjetos.put(projeto.id(), projeto.nome()));
+        model.addAttribute("nomesProjetos", nomesProjetos);
         model.addAttribute("statusSelecionado", status);
         model.addAttribute("projetoIdSelecionado", projetoId);
         model.addAttribute("inicioSelecionado", inicio);
@@ -121,16 +139,16 @@ public class TarefaViewController {
 
         Long usuarioId = usuarioIdOpt.get();
         if (bindingResult.hasErrors()) {
-            UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
-            model.addAttribute("usuarioNome", usuario.nome());
-            model.addAttribute("projetos", projetoService.listarPorUsuario(usuarioId));
-            model.addAttribute("statusOpcoes", Tarefa.Status.values());
-            model.addAttribute("prioridadeOpcoes", Tarefa.Prioridade.values());
-            model.addAttribute("modoEdicao", false);
+            popularFormulario(model, usuarioId, false, null);
             return "tarefas/formulario";
         }
 
-        tarefaService.criar(usuarioId, dto);
+        try {
+            tarefaService.criar(usuarioId, dto);
+        } catch (BusinessRuleException | ResourceNotFoundException ex) {
+            redirectAttributes.addFlashAttribute("mensagemErro", ex.getMessage());
+            return "redirect:/tarefas/nova";
+        }
         redirectAttributes.addFlashAttribute("mensagemSucesso", "Tarefa criada com sucesso!");
         return "redirect:/tarefas";
     }
@@ -143,29 +161,33 @@ public class TarefaViewController {
         }
 
         Long usuarioId = usuarioIdOpt.get();
-        UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
-        TarefaResponseDTO tarefa = tarefaService.buscarPorId(usuarioId, id);
-        List<ProjetoResponseDTO> projetos = projetoService.listarPorUsuario(usuarioId);
+        try {
+            UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
+            TarefaResponseDTO tarefa = tarefaService.buscarPorId(usuarioId, id);
+            List<ProjetoResponseDTO> projetos = projetoService.listarPorUsuario(usuarioId);
 
-        if (!model.containsAttribute("tarefaForm")) {
-            model.addAttribute("tarefaForm", new TarefaRequestDTO(
-                    tarefa.titulo(),
-                    tarefa.descricao(),
-                    tarefa.status(),
-                    tarefa.prioridade(),
-                    tarefa.dataVencimento(),
-                    tarefa.projetoId()
-            ));
+            if (!model.containsAttribute("tarefaForm")) {
+                model.addAttribute("tarefaForm", new TarefaRequestDTO(
+                        tarefa.titulo(),
+                        tarefa.descricao(),
+                        tarefa.status(),
+                        tarefa.prioridade(),
+                        tarefa.dataVencimento(),
+                        tarefa.projetoId()
+                ));
+            }
+
+            model.addAttribute("usuarioNome", usuario.nome());
+            model.addAttribute("tarefaId", id);
+            model.addAttribute("projetos", projetos);
+            model.addAttribute("statusOpcoes", Tarefa.Status.values());
+            model.addAttribute("prioridadeOpcoes", Tarefa.Prioridade.values());
+            model.addAttribute("modoEdicao", true);
+            return "tarefas/formulario";
+        } catch (ResourceNotFoundException ex) {
+            model.addAttribute("mensagemErro", ex.getMessage());
+            return listar(null, null, null, null, model);
         }
-
-        model.addAttribute("usuarioNome", usuario.nome());
-        model.addAttribute("tarefaId", id);
-        model.addAttribute("projetos", projetos);
-        model.addAttribute("statusOpcoes", Tarefa.Status.values());
-        model.addAttribute("prioridadeOpcoes", Tarefa.Prioridade.values());
-        model.addAttribute("modoEdicao", true);
-
-        return "tarefas/formulario";
     }
 
     @PostMapping("/{id}/editar")
@@ -181,27 +203,51 @@ public class TarefaViewController {
 
         Long usuarioId = usuarioIdOpt.get();
         if (bindingResult.hasErrors()) {
-            UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
-            model.addAttribute("usuarioNome", usuario.nome());
-            model.addAttribute("tarefaId", id);
-            model.addAttribute("projetos", projetoService.listarPorUsuario(usuarioId));
-            model.addAttribute("statusOpcoes", Tarefa.Status.values());
-            model.addAttribute("prioridadeOpcoes", Tarefa.Prioridade.values());
-            model.addAttribute("modoEdicao", true);
+            popularFormulario(model, usuarioId, true, id);
             return "tarefas/formulario";
         }
 
-        tarefaService.atualizar(usuarioId, id, dto);
+        try {
+            tarefaService.atualizar(usuarioId, id, dto);
+        } catch (BusinessRuleException | ResourceNotFoundException ex) {
+            redirectAttributes.addFlashAttribute("mensagemErro", ex.getMessage());
+            return "redirect:/tarefas/" + id + "/editar";
+        }
         redirectAttributes.addFlashAttribute("mensagemSucesso", "Tarefa atualizada com sucesso!");
         return "redirect:/tarefas";
     }
 
     @PostMapping("/{id}/excluir")
     public String excluir(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        usuarioContextService.obterUsuarioIdOpcional().ifPresent(usuarioId ->
-                tarefaService.excluir(usuarioId, id));
-        redirectAttributes.addFlashAttribute("mensagemSucesso", "Tarefa excluída com sucesso!");
+        Optional<Long> usuarioIdOpt = usuarioContextService.obterUsuarioIdOpcional();
+        if (usuarioIdOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Usuário de desenvolvimento não configurado.");
+            return "redirect:/tarefas";
+        }
+
+        try {
+            tarefaService.excluir(usuarioIdOpt.get(), id);
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Tarefa excluída com sucesso!");
+        } catch (ResourceNotFoundException ex) {
+            redirectAttributes.addFlashAttribute("mensagemErro", ex.getMessage());
+        }
         return "redirect:/tarefas";
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public String tratarRecursoNaoEncontrado(ResourceNotFoundException ex, RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("mensagemErro", ex.getMessage());
+        return "redirect:/tarefas";
+    }
+
+    private void popularFormulario(Model model, Long usuarioId, boolean modoEdicao, Long tarefaId) {
+        UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
+        model.addAttribute("usuarioNome", usuario.nome());
+        model.addAttribute("projetos", projetoService.listarPorUsuario(usuarioId));
+        model.addAttribute("statusOpcoes", Tarefa.Status.values());
+        model.addAttribute("prioridadeOpcoes", Tarefa.Prioridade.values());
+        model.addAttribute("modoEdicao", modoEdicao);
+        model.addAttribute("tarefaId", tarefaId);
     }
 
     private void popularDadosVazios(Model model) {
