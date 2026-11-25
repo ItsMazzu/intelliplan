@@ -10,9 +10,11 @@ A proposta é oferecer uma alternativa estruturada às ferramentas tradicionais 
 
 ## 1. Sobre o Projeto
 
-O IntelliPlan surgiu da proposta de desenvolver uma plataforma completa que auxilie na organização e no acompanhamento da rotina pessoal e acadêmica.
+O IntelliPlan surgiu da proposta de desenvolver uma plataforma completa que auxilie na organização, no planejamento e no acompanhamento da rotina pessoal e acadêmica.
 
-A aplicação reúne recursos de planejamento e gerenciamento em uma arquitetura modular por domínio, combinando uma interface web server-side (Thymeleaf, Tailwind CSS, Lucide Icons) com endpoints REST documentados (OpenAPI / Swagger UI), persistência relacional com PostgreSQL e integração com serviços externos. A interface e a API disponíveis variam por módulo; tarefas, por exemplo, são gerenciadas por rotas MVC/Thymeleaf, não por uma API REST.
+A aplicação adota uma **arquitetura monolítica modular**, baseada no Spring Boot, com separação de responsabilidades por domínio funcional. Essa abordagem concentra as funcionalidades em uma única unidade de implantação, mantendo os módulos internos organizados, coesos e integrados.
+
+A plataforma combina uma interface web server-side desenvolvida com Thymeleaf, Tailwind CSS e Lucide Icons, uma API RESTful documentada por meio de OpenAPI 3.0 e Swagger UI, persistência de dados em banco relacional PostgreSQL e integração com serviços externos. Essa estrutura permite reunir diferentes recursos de organização e gerenciamento em um ambiente integrado e extensível.
 
 ---
 

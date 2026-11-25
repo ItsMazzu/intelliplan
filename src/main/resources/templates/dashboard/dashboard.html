@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,6 +32,7 @@
   <link rel="stylesheet" th:href="@{/css/pages/dashboard.css}" href="/css/pages/dashboard.css">
 </head>
 <body class="min-h-screen bg-mist text-ink">
+<span hidden data-favorite-user sec:authentication="name"></span>
 <div class="min-h-screen lg:flex">
 
   <aside class="sidebar flex w-full flex-col text-white lg:fixed lg:inset-y-0 lg:w-[216px]">
@@ -168,7 +169,8 @@
             <h2 class="section-title"><i data-lucide="list-checks"></i>Tarefas de hoje</h2>
             <a th:href="@{/tarefas}" href="/tarefas" class="text-link">Ver todas <i data-lucide="arrow-right"></i></a>
           </div>
-          <div class="divide-y divide-[#f0ebf4]">
+          <p data-favorite-feedback class="hidden rounded-xl px-3 py-2 text-xs" role="status" aria-live="polite"></p>
+          <div class="divide-y divide-[#f0ebf4]" data-favorite-list>
             <div th:each="tarefa : ${tarefasHoje}" class="task-row">
               <form th:action="@{/tarefas/{id}/concluir(id=${tarefa.id})}" method="post" class="flex min-w-0 flex-1 items-center gap-3">
                 <button type="submit" class="task-check" th:classappend="${tarefa.concluida} ? ' checked' : ''" aria-label="Concluir tarefa">
@@ -177,14 +179,16 @@
                 <span class="truncate text-sm" th:classappend="${tarefa.concluida} ? ' line-through text-slate-400' : ''" th:text="${tarefa.titulo}">Estudar para a prova de Cálculo</span>
               </form>
               <span class="tag tag-study" th:text="${tarefa.categoria} ?: 'Estudos'">Estudos</span>
-              <button class="star-button" aria-label="Favoritar"><i data-lucide="star"></i></button>
+              <button type="button" class="star-button" th:attr="data-task-id=${tarefa.id}" aria-pressed="false" aria-label="Favoritar" title="Favoritar">
+                <i data-lucide="star"></i>
+              </button>
             </div>
             <div th:if="${tarefasHoje == null}" class="contents">
-              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Estudar para a prova de Cálculo</span><span class="tag tag-study">Estudos</span><button class="star-button"><i data-lucide="star"></i></button></div>
-              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Finalizar projeto da faculdade</span><span class="tag tag-project">Projetos</span><button class="star-button"><i data-lucide="star"></i></button></div>
-              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Responder e-mails do trabalho</span><span class="tag tag-work">Trabalho</span><button class="star-button"><i data-lucide="star"></i></button></div>
-              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Beber água</span><span class="tag tag-habit">Hábitos</span><button class="star-button"><i data-lucide="star"></i></button></div>
-              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Fazer alongamento</span><span class="tag tag-habit">Hábitos</span><button class="star-button"><i data-lucide="star"></i></button></div>
+              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Estudar para a prova de Cálculo</span><span class="tag tag-study">Estudos</span></div>
+              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Finalizar projeto da faculdade</span><span class="tag tag-project">Projetos</span></div>
+              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Responder e-mails do trabalho</span><span class="tag tag-work">Trabalho</span></div>
+              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Beber água</span><span class="tag tag-habit">Hábitos</span></div>
+              <div class="task-row"><span class="task-check"></span><span class="min-w-0 flex-1 truncate text-sm">Fazer alongamento</span><span class="tag tag-habit">Hábitos</span></div>
             </div>
           </div>
         </article>
@@ -259,5 +263,6 @@
 
 <script src="https://unpkg.com/lucide@0.468.0"></script>
 <script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
+<script th:src="@{/js/pages/interaction-dashboard.js}" src="/js/pages/interaction-dashboard.js"></script>
 </body>
 </html>
