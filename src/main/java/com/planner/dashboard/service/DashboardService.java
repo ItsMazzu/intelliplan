@@ -158,18 +158,27 @@ public class DashboardService {
         }
 
         List<FeriadoDTO> feriadosAno = feriadoService.listarFeriados(hoje.getYear());
-        Set<LocalDate> datasFeriados = feriadosAno.stream()
-                .map(FeriadoDTO::date)
-                .filter(d -> d != null && d.getMonth() == hoje.getMonth() && d.getYear() == hoje.getYear())
-                .collect(Collectors.toSet());
+        Map<LocalDate, FeriadoDTO> feriadosDoMes = feriadosAno.stream()
+                .filter(feriado -> feriado.date() != null
+                        && feriado.date().getMonth() == hoje.getMonth()
+                        && feriado.date().getYear() == hoje.getYear())
+                .collect(Collectors.toMap(FeriadoDTO::date, feriado -> feriado, (primeiro, segundo) -> primeiro));
 
         int totalDiasNoMes = YearMonth.from(hoje).lengthOfMonth();
         List<DiaCalendarioDTO> diasCalendario = new ArrayList<>();
         for (int dia = 1; dia <= totalDiasNoMes; dia++) {
             LocalDate dataDia = LocalDate.of(hoje.getYear(), hoje.getMonth(), dia);
             boolean isHoje = dataDia.equals(hoje);
-            boolean temEvento = datasComCompromisso.contains(dataDia) || datasFeriados.contains(dataDia);
-            diasCalendario.add(new DiaCalendarioDTO(dia, isHoje, temEvento));
+            FeriadoDTO feriado = feriadosDoMes.get(dataDia);
+            boolean temFeriado = feriado != null;
+            boolean temEvento = datasComCompromisso.contains(dataDia) || temFeriado;
+            diasCalendario.add(new DiaCalendarioDTO(
+                    dia,
+                    isHoje,
+                    temEvento,
+                    temFeriado,
+                    feriado != null ? feriado.name() : null
+            ));
         }
 
         Map<Long, String> nomesProjetos = projetos.stream()
@@ -284,18 +293,26 @@ public class DashboardService {
         String mesAtual = formatarMesAno(hoje);
 
         List<FeriadoDTO> feriadosAno = feriadoService.listarFeriados(hoje.getYear());
-        Set<LocalDate> datasFeriados = feriadosAno.stream()
-                .map(FeriadoDTO::date)
-                .filter(d -> d != null && d.getMonth() == hoje.getMonth() && d.getYear() == hoje.getYear())
-                .collect(Collectors.toSet());
+        Map<LocalDate, FeriadoDTO> feriadosDoMes = feriadosAno.stream()
+                .filter(feriado -> feriado.date() != null
+                        && feriado.date().getMonth() == hoje.getMonth()
+                        && feriado.date().getYear() == hoje.getYear())
+                .collect(Collectors.toMap(FeriadoDTO::date, feriado -> feriado, (primeiro, segundo) -> primeiro));
 
         int totalDiasNoMes = YearMonth.from(hoje).lengthOfMonth();
         List<DiaCalendarioDTO> diasCalendario = new ArrayList<>();
         for (int dia = 1; dia <= totalDiasNoMes; dia++) {
             LocalDate dataDia = LocalDate.of(hoje.getYear(), hoje.getMonth(), dia);
             boolean isHoje = dataDia.equals(hoje);
-            boolean temEvento = datasFeriados.contains(dataDia);
-            diasCalendario.add(new DiaCalendarioDTO(dia, isHoje, temEvento));
+            FeriadoDTO feriado = feriadosDoMes.get(dataDia);
+            boolean temFeriado = feriado != null;
+            diasCalendario.add(new DiaCalendarioDTO(
+                    dia,
+                    isHoje,
+                    temFeriado,
+                    temFeriado,
+                    feriado != null ? feriado.name() : null
+            ));
         }
 
         return new DashboardDadosDTO(

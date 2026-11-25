@@ -34,9 +34,16 @@
         </div>
         <p th:if="${param.erro}" class="login-note">E-mail ou senha inválidos.</p>
         <p th:if="${param.logout}" class="login-note">Você saiu da aplicação.</p>
+        <p th:if="${param.instalacao}" class="login-note">Instalação concluída! Acesse com sua conta principal.</p>
+        <p th:if="${param.cadastro}" class="login-note">Conta criada! Entre com seu novo usuário.</p>
         <button type="submit" class="primary-button"><i data-lucide="log-in"></i><span>Entrar</span></button>
       </form>
-      <a th:href="@{/setup}" class="login-note" th:if="${primeiraExecucao}">Iniciar configuração do IntelliPlan</a>
+      <section class="login-setup" aria-label="Configuração e cadastro">
+        <p th:if="${!instalacaoConcluida}">Primeira vez utilizando o IntelliPlan? Configure sua instalação e crie sua conta para começar.</p>
+        <p th:if="${instalacaoConcluida}">Ainda não tem uma conta? Crie seu usuário para começar a usar o IntelliPlan.</p>
+        <a th:href="@{/setup}" class="secondary-button login-setup-link"
+           th:text="${instalacaoConcluida} ? 'Criar conta' : 'Configurar IntelliPlan'">Configurar IntelliPlan</a>
+      </section>
     </div>
   </section>
 </main>

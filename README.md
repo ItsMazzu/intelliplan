@@ -30,6 +30,8 @@ A aplicação está organizada nos seguintes módulos:
 | **Hábitos** | Cadastro de hábitos com frequências (diária, semanal, mensal), ativação/desativação e registro diário de execução. | **Concluído (REST + Service)** |
 | **Feriados** | Sincronização e consulta de feriados nacionais brasileiros via BrasilAPI, integrados à agenda e ao calendário. | **Concluído e Integrado** |
 | **Usuários** | Cadastro de contas com hash seguro de senhas via BCrypt e consulta por ID ou e-mail. | **Concluído (REST + Service)** |
+| **Configurações** | Página autenticada `/configuracoes` com dados da conta, encerramento seguro da sessão e informações disponíveis da instalação. | **Concluído (MVC)** |
+| **Notificações** | Central persistente por usuário com lembretes de tarefas, compromissos, hábitos e projetos; permite marcar itens como lidos. | **Concluído (REST + interface)** |
 
 ---
 
@@ -73,6 +75,7 @@ src/main/java/com/planner/
 ├── estudos         # Matéria e ConteúdoEstudo: Entities, Repositories, DTOs, Services e Controllers
 ├── habitos         # Hábito e RegistroHabito: Entities, Repositories, DTOs, Services e Controllers
 ├── integracao      # BrasilAPI: Client HTTP resiliente, DTO, Service e Controller
+├── notificacao     # Notificações persistentes por usuário, reconciliação de eventos e API autenticada
 ├── projeto         # Projeto: Entity, Repository, DTOs, Service e Controller
 ├── tarefa          # Tarefa: Entity, Repository, DTOs, Service e Controller
 └── usuario         # Usuário: Entity, Repository, DTOs, Service (BCrypt) e Controller
@@ -174,6 +177,21 @@ A documentação em formato JSON da especificação OpenAPI 3.0 está acessível
 http://localhost:8080/v3/api-docs
 ```
 
+### Central de notificações
+
+A central é acessível pelo sino nas páginas da aplicação. Ao abrir o painel, o backend reconcilia lembretes de tarefas vencidas ou com prazo nos próximos três dias, compromissos nas próximas 24 horas, projetos com data de conclusão nos próximos sete dias e hábitos sem registro no ciclo diário, semanal ou mensal.
+
+As notificações ficam persistidas e isoladas pelo usuário autenticado. A chave única por usuário e evento impede duplicidades mesmo se a central for aberta repetidamente ou houver requisições concorrentes.
+
+Endpoints autenticados:
+
+| Método | Rota | Ação |
+|---|---|---|
+| `GET` | `/api/v1/notificacoes` | Lista as 30 notificações mais recentes e a contagem não lida. |
+| `POST` | `/api/v1/notificacoes/sincronizar` | Reconcilia eventos e retorna a lista atualizada. |
+| `PATCH` | `/api/v1/notificacoes/{id}/lida` | Marca uma notificação do usuário atual como lida. |
+| `PATCH` | `/api/v1/notificacoes/lidas` | Marca todas as notificações do usuário atual como lidas. |
+
 ### Garantias do armazenamento local
 
 - O arquivo local fica em `%USERPROFILE%\.intelliplan\application.properties` no Windows ou `~/.intelliplan/application.properties` no Linux/macOS.
@@ -194,7 +212,7 @@ http://localhost:8080/v3/api-docs
 | **DTOs e Validações** | Concluídos | Records Java com validações Jakarta (`@NotBlank`, `@Size`, etc.). |
 | **Camada de Services (8 Services)** | Concluída | Regras de negócio, transações (`@Transactional`) e isolamento estrito de dados. |
 | **Tratamento de Exceções** | Concluído | `GlobalExceptionHandler` mapeando exceções de domínio e validação para RFC 7807 (`ProblemDetail`). |
-| **Controllers REST (8 Controllers)** | Concluídos | Endpoints RESTful versionados sob `/api/v1/` com anotações OpenAPI. |
+| **Controllers REST (9 Controllers)** | Concluídos | Endpoints RESTful versionados sob `/api/v1/` com anotações OpenAPI. |
 | **Integração BrasilAPI** | Concluída | Client HTTP resiliente com timeouts para feriados nacionais e endpoint `/api/v1/feriados/{ano}`. |
 | **Contexto de Usuário** | Concluído | `UsuarioContextService` resolve o usuário pelo principal autenticado. |
 | **Dashboard com Dados Reais** | Concluído | Agregação completa de métricas, progresso e calendário sem erros em banco vazio. |

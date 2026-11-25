@@ -22,19 +22,7 @@
   <!-- Card 1 com a arte do gatinho -->
   <div class="sidebar-note mx-4 mb-5 mt-auto hidden rounded-2xl p-5 lg:block" aria-label="Card motivacional"></div>
 
-  <div class="mt-auto flex items-center justify-between border-t border-white/10 px-5 py-5">
-    <div class="flex min-w-0 items-center gap-3">
-      <div class="avatar">LC</div>
-      <div class="min-w-0">
-        <p class="truncate text-sm font-semibold" th:text="${usuarioNome} ?: 'Laís Campos'">Laís Campos</p>
-        <p class="text-xs text-purple-200/70">Meu espaço</p>
-      </div>
-    </div>
-    <form th:action="@{/logout}" method="post">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-      <button type="submit" aria-label="Sair"><i data-lucide="log-out" class="h-5 w-5 text-purple-200"></i></button>
-    </form>
-  </div>
+  <div th:replace="~{fragments/profile :: sidebar}"></div>
 </aside>
 
 </body>

@@ -1,5 +1,6 @@
 package com.planner.config.setup;
 
+import com.planner.common.exception.DuplicateResourceException;
 import com.planner.usuario.dto.UsuarioRequestDTO;
 import com.planner.usuario.repository.UsuarioRepository;
 import com.planner.usuario.service.UsuarioService;
@@ -31,16 +32,14 @@ public class InstallationViewController {
 
     @GetMapping
     public synchronized String setup(Model model) {
-        if (configService.isInitialized() || usuarioRepository.count() > 0) {
-            return "redirect:/login";
-        }
-        if (!model.containsAttribute("databaseConfig")) {
-            model.addAttribute("databaseConfig", new DatabaseConfigDTO("localhost", 5432, "intelliplan", "", ""));
-        }
+        boolean instalacaoConcluida = instalacaoConcluida();
         if (!model.containsAttribute("contaPrincipal")) {
             model.addAttribute("contaPrincipal", new ContaPrincipalDTO("", "", "", ""));
         }
-        model.addAttribute("temUsuarios", false);
+        if (!instalacaoConcluida && !model.containsAttribute("databaseConfig")) {
+            model.addAttribute("databaseConfig", new DatabaseConfigDTO("localhost", 5432, "intelliplan", "", ""));
+        }
+        model.addAttribute("instalacaoConcluida", instalacaoConcluida);
         return "config/setup";
     }
 
@@ -48,7 +47,7 @@ public class InstallationViewController {
     public synchronized String testar(@Valid @ModelAttribute("databaseConfig") DatabaseConfigDTO dto,
                                       BindingResult bindingResult,
                                       RedirectAttributes redirectAttributes) {
-        if (configService.isInitialized() || usuarioRepository.count() > 0) {
+        if (instalacaoConcluida()) {
             return "redirect:/login";
         }
         if (bindingResult.hasErrors()) {
@@ -73,19 +72,34 @@ public class InstallationViewController {
     public synchronized String criarConta(@Valid @ModelAttribute("contaPrincipal") ContaPrincipalDTO dto,
                                           BindingResult bindingResult,
                                           RedirectAttributes redirectAttributes) {
-        if (configService.isInitialized() || usuarioRepository.count() > 0) {
-            return "redirect:/login";
-        }
+        boolean primeiroUsuario = !instalacaoConcluida();
         if (!dto.senha().equals(dto.confirmarSenha())) {
             bindingResult.rejectValue("confirmarSenha", "senha.diferente", "As senhas informadas não coincidem.");
         }
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.contaPrincipal", bindingResult);
-            redirectAttributes.addFlashAttribute("contaPrincipal", dto);
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Revise os dados informados e confirme as senhas.");
+            redirectAttributes.addFlashAttribute("contaPrincipal", contaSemSenhas(dto));
             return "redirect:/setup";
         }
-        usuarioService.criar(new UsuarioRequestDTO(dto.nome(), dto.email(), dto.senha()));
-        configService.markInitialized();
-        return "redirect:/login?instalacao";
+        try {
+            usuarioService.criar(new UsuarioRequestDTO(dto.nome(), dto.email(), dto.senha()));
+        } catch (DuplicateResourceException ex) {
+            redirectAttributes.addFlashAttribute("mensagemErro", ex.getMessage());
+            redirectAttributes.addFlashAttribute("contaPrincipal", contaSemSenhas(dto));
+            return "redirect:/setup";
+        }
+        if (primeiroUsuario) {
+            configService.markInitialized();
+        }
+        return primeiroUsuario ? "redirect:/login?instalacao" : "redirect:/login?cadastro";
+    }
+
+    private boolean instalacaoConcluida() {
+        return configService.isInitialized() || usuarioRepository.count() > 0;
+    }
+
+    private ContaPrincipalDTO contaSemSenhas(ContaPrincipalDTO dto) {
+        return new ContaPrincipalDTO(dto.nome(), dto.email(), "", "");
     }
 }

@@ -46,10 +46,8 @@
         <span>Voltar para tarefas</span>
       </a>
       <div class="flex items-center gap-3">
-        <button class="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-purple-50">
-          <div class="avatar avatar-small">LC</div>
-          <span class="hidden text-sm font-semibold sm:inline" th:text="${usuarioNome} ?: 'Laís'">Laís</span>
-        </button>
+        <div th:replace="~{fragments/notifications :: control}"></div>
+        <div th:replace="~{fragments/profile :: topbar}"></div>
       </div>
     </header>
 
@@ -183,6 +181,6 @@
 </div>
 
 <script src="https://unpkg.com/lucide@0.468.0"></script>
-<script th:src="@{/js/pages/dashboard.js}" src="/js/pages/dashboard.js"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
 </body>
 </html>

@@ -409,6 +409,25 @@
   font-weight: 700;
 }
 
+.calendar-holiday {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 7px;
+  border-radius: 7px;
+  background: #fff1cf;
+  color: #987a32;
+  padding: 4px 5px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.calendar-day.is-holiday {
+  border-color: #e6c65f;
+  background: #fffdf7;
+}
+
 .login-page {
   min-height: 100vh;
   display: grid;
@@ -444,6 +463,14 @@
 .login-card .primary-button { width: 100%; justify-content: center; min-height: 48px; margin-top: 8px; }
 .login-password-field { margin-top: 16px; }
 .login-note { margin-top: 18px; text-align: center; font-size: 12px; }
+.login-setup {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #eee8f2;
+  text-align: center;
+}
+.login-setup p { color: #746582; font-size: 12px; line-height: 1.6; }
+.login-setup-link { width: 100%; margin-top: 12px; }
 
 .habit-history { margin-top: 20px; }
 .habit-history .form-body { border-bottom: 1px solid #eee8f2; }

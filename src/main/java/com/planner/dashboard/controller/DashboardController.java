@@ -33,6 +33,7 @@ public class DashboardController {
     public String dashboard(Model model) {
         DashboardDadosDTO dados = dashboardService.obterDadosDashboard();
         model.addAttribute("usuarioNome", dados.usuarioNome());
+        model.addAttribute("usuarioIniciais", iniciais(dados.usuarioNome()));
         model.addAttribute("primeiroNome", dados.primeiroNome());
         model.addAttribute("totalTarefas", dados.totalTarefas());
         model.addAttribute("totalProjetos", dados.totalProjetos());
@@ -49,6 +50,14 @@ public class DashboardController {
         model.addAttribute("projetosAtivos", dados.projetosAtivos());
         model.addAttribute("materias", dados.materias());
         return "dashboard/dashboard";
+    }
+
+    private String iniciais(String nome) {
+        if (nome == null || nome.isBlank()) return "U";
+        String[] partes = nome.trim().split("\\s+");
+        return partes.length == 1
+                ? partes[0].substring(0, 1).toUpperCase()
+                : (partes[0].substring(0, 1) + partes[partes.length - 1].substring(0, 1)).toUpperCase();
     }
 
     @PostMapping("/tarefas/{id}/concluir")

@@ -6,6 +6,8 @@ import com.planner.agenda.service.CompromissoService;
 import com.planner.common.context.UsuarioContextService;
 import com.planner.common.exception.BusinessRuleException;
 import com.planner.common.exception.ResourceNotFoundException;
+import com.planner.integracao.feriados.dto.FeriadoDTO;
+import com.planner.integracao.feriados.service.FeriadoService;
 import com.planner.usuario.dto.UsuarioResponseDTO;
 import com.planner.usuario.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -40,13 +42,16 @@ public class AgendaViewController {
     private final CompromissoService compromissoService;
     private final UsuarioService usuarioService;
     private final UsuarioContextService usuarioContextService;
+    private final FeriadoService feriadoService;
 
     public AgendaViewController(CompromissoService compromissoService,
                                 UsuarioService usuarioService,
-                                UsuarioContextService usuarioContextService) {
+                                UsuarioContextService usuarioContextService,
+                                FeriadoService feriadoService) {
         this.compromissoService = compromissoService;
         this.usuarioService = usuarioService;
         this.usuarioContextService = usuarioContextService;
+        this.feriadoService = feriadoService;
     }
 
     @GetMapping
@@ -194,8 +199,10 @@ public class AgendaViewController {
                                                            List<CompromissoResponseDTO> compromissos) {
         LocalDate primeiro = mes.atDay(1);
         LocalDate inicioGrade = primeiro.minusDays(primeiro.getDayOfWeek().getValue() % 7);
-        Map<LocalDate, List<CompromissoResponseDTO>> porDia = compromissos.stream()
-                .collect(Collectors.groupingBy(c -> c.dataHoraInicio().toLocalDate()));
+        List<FeriadoDTO> feriados = feriadoService.listarFeriados(mes.getYear());
+        Map<LocalDate, FeriadoDTO> feriadosPorDia = feriados.stream()
+                .filter(feriado -> feriado.date() != null)
+                .collect(Collectors.toMap(FeriadoDTO::date, feriado -> feriado, (primeiroFeriado, segundo) -> primeiroFeriado));
         List<Map<String, Object>> dias = new ArrayList<>();
         for (int i = 0; i < 42; i++) {
             LocalDate data = inicioGrade.plusDays(i);
@@ -213,6 +220,10 @@ public class AgendaViewController {
             dia.put("fora", data.getMonth() != mes.getMonth());
             dia.put("hoje", data.equals(LocalDate.now()));
             dia.put("eventos", eventos);
+            FeriadoDTO feriado = data.getYear() == mes.getYear()
+                    ? feriadosPorDia.get(data)
+                    : null;
+            dia.put("feriado", feriado);
             dias.add(dia);
         }
         return dias;

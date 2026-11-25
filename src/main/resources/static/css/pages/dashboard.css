@@ -107,6 +107,20 @@ body { font-family: "DM Sans", sans-serif; }
 .calendar-date:hover { background: #f2eafa; }
 .calendar-date.selected { color: white; background: #8050d6; box-shadow: 0 4px 10px #8050d644; }
 .calendar-date.has-event:after { content: ""; position: absolute; bottom: 1px; width: 4px; height: 4px; border-radius: 50%; background: #d58ac0; }
+.calendar-date.is-holiday {
+  border: 1px solid #d8b44c;
+  background: #fffaf0;
+  color: #80651f;
+}
+.calendar-date.is-holiday:after {
+  content: "";
+  position: absolute;
+  bottom: 1px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #d8a72f;
+}
 .calendar-date.selected:after { background: #fff; }
 .calendar-arrow { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 50%; color: #8b79a0; }
 .calendar-arrow:hover { background: #f4eff8; }

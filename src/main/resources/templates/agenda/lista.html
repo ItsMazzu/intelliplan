@@ -36,8 +36,11 @@
             <div class="calendar-grid">
               <button th:each="dia : ${diasCalendario}" type="button"
                       th:attr="data-date=${dia.data}"
-                      th:class="'calendar-day' + (${dia.fora} ? ' outside' : '') + (${dia.hoje} ? ' today' : '')">
+                      th:class="'calendar-day' + (${dia.fora} ? ' outside' : '') + (${dia.hoje} ? ' today' : '') + (${dia.feriado} != null ? ' is-holiday' : '')"
+                      th:title="${dia.feriado} != null ? 'Feriado: ' + ${dia.feriado.name} : ''"
+                      th:attrappend="aria-label=${dia.feriado} != null ? ${dia.data} + ' - Feriado: ' + ${dia.feriado.name} : null">
                 <span class="calendar-number" th:text="${dia.numero}">1</span>
+                <span th:if="${dia.feriado}" class="calendar-holiday" th:text="${dia.feriado.name}">Feriado nacional</span>
                 <span th:each="evento : ${dia.eventos}" class="calendar-event" th:text="${evento.titulo}">Evento</span>
               </button>
             </div>

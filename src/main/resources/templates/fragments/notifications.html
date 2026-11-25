@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="control" class="notification-center"
+     th:attr="data-api-base=@{/api/v1/notificacoes}">
+  <button type="button" class="icon-button notification-trigger" data-notification-toggle
+          aria-label="Notificações" aria-expanded="false" aria-controls="notification-panel">
+    <i data-lucide="bell"></i>
+    <span class="notification-badge" data-notification-badge hidden></span>
+  </button>
+  <section id="notification-panel" class="notification-panel" data-notification-panel hidden
+           aria-label="Central de notificações">
+    <div class="notification-panel-header">
+      <div>
+        <h2>Notificações</h2>
+        <p data-notification-summary>Seus lembretes e alertas.</p>
+      </div>
+      <button type="button" class="notification-read-all" data-notification-read-all hidden>
+        Marcar todas como lidas
+      </button>
+    </div>
+    <p class="notification-feedback" data-notification-feedback aria-live="polite" hidden></p>
+    <p class="notification-error" data-notification-error role="alert" hidden></p>
+    <div class="notification-empty" data-notification-empty hidden>
+      <span class="notification-empty-icon"><i data-lucide="bell-off"></i></span>
+      <strong>Nenhuma notificação por enquanto</strong>
+      <span>Quando houver um prazo ou atividade importante, ela aparecerá aqui.</span>
+    </div>
+    <ul class="notification-list" data-notification-list></ul>
+    <input type="hidden" data-notification-csrf
+           th:value="${_csrf.token}" th:attr="data-header=${_csrf.headerName}">
+  </section>
+  <script th:src="@{/js/components/notifications.js}" src="/js/components/notifications.js"></script>
+</div>
+</body>
+</html>

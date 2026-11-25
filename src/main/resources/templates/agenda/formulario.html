@@ -33,12 +33,12 @@
             </div>
             <div class="form-field">
               <label for="dataHoraInicio">Início *</label>
-              <input id="dataHoraInicio" type="datetime-local" th:field="*{dataHoraInicio}" required>
+              <input id="dataHoraInicio" type="datetime-local" th:field="*{dataHoraInicio}" step="1" required>
               <p th:if="${#fields.hasErrors('dataHoraInicio')}" th:errors="*{dataHoraInicio}" class="validation-error"></p>
             </div>
             <div class="form-field">
               <label for="dataHoraFim">Término</label>
-              <input id="dataHoraFim" type="datetime-local" th:field="*{dataHoraFim}">
+              <input id="dataHoraFim" type="datetime-local" th:field="*{dataHoraFim}" step="1">
               <p th:if="${#fields.hasErrors('dataHoraFim')}" th:errors="*{dataHoraFim}" class="validation-error"></p>
             </div>
             <div class="form-field full">

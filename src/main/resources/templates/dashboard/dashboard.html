@@ -54,16 +54,7 @@
     <div class="sidebar-note mx-4 mb-5 mt-auto hidden rounded-2xl p-5 lg:block" aria-label="Card motivacional"></div>
 
   
-    <div class="mt-auto flex items-center justify-between border-t border-white/10 px-5 py-5">
-      <div class="flex min-w-0 items-center gap-3">
-        <div class="avatar">LC</div>
-        <div class="min-w-0">
-          <p class="truncate text-sm font-semibold" th:text="${usuarioNome} ?: 'Laís Campos'">Laís Campos</p>
-          <p class="text-xs text-purple-200/70">Meu espaço</p>
-        </div>
-      </div>
-      <a th:href="@{/configuracoes}" href="/configuracoes" aria-label="Configurações"><i data-lucide="settings" class="h-5 w-5 text-purple-200"></i></a>
-    </div>
+    <div th:replace="~{fragments/profile :: sidebar}"></div>
   </aside>
 
 
@@ -75,13 +66,9 @@
         <input type="search" placeholder="Buscar tarefas, projetos, matérias..." class="search-input w-full rounded-full py-3 pl-11 pr-4 text-sm outline-none">
       </div>
       <div class="flex items-center gap-3">
-        <button class="icon-button" aria-label="Notificações"><i data-lucide="bell"></i><span class="notification-dot"></span></button>
+        <div th:replace="~{fragments/notifications :: control}"></div>
         <div class="hidden h-8 border-l border-purple-100 sm:block"></div>
-        <button class="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-purple-50">
-          <div class="avatar avatar-small">LC</div>
-          <span class="hidden text-sm font-semibold sm:inline" th:text="${usuarioNome} ?: 'Laís'">Laís</span>
-          <i data-lucide="chevron-down" class="h-4 w-4"></i>
-        </button>
+        <div th:replace="~{fragments/profile :: topbar}"></div>
         <a th:href="@{/tarefas/nova}" href="/tarefas/nova" class="primary-button"><i data-lucide="plus" class="h-4 w-4"></i><span>Nova tarefa</span></a>
       </div>
     </header>
@@ -92,7 +79,7 @@
         <div class="relative z-10 max-w-xl">
           <p class="mb-2 text-sm font-semibold uppercase tracking-[.18em] text-purple-200">Seu espaço de organização</p>
           <h1 class="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
-            Olá, <span th:text="${primeiroNome} ?: 'Laís'">Laís</span>!
+            Olá, <span th:text="${primeiroNome} ?: 'Usuário'">Usuário</span>!
             <i data-lucide="sparkles" class="ml-1 inline h-7 w-7 text-purple-300"></i>
           </h1>
           <p class="mt-2 text-base text-purple-100/90 md:text-lg">Sua rotina, seus objetivos e suas conquistas em um só lugar.</p>
@@ -161,7 +148,11 @@
             <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
           </div>
           <div class="calendar-grid mt-2">
-            <button th:each="dia : ${diasCalendario}" class="calendar-date" th:classappend="${dia.hoje} ? ' selected' : (${dia.temEvento} ? ' has-event' : '')" th:text="${dia.numero}">1</button>
+            <button th:each="dia : ${diasCalendario}"
+                    class="calendar-date"
+                    th:classappend="${dia.hoje} ? ' selected' : (${dia.temFeriado} ? ' is-holiday' : (${dia.temEvento} ? ' has-event' : ''))"
+                    th:attr="title=${dia.temFeriado} ? 'Feriado: ' + ${dia.nomeFeriado} : (${dia.temEvento} ? 'Possui evento' : 'Nenhum evento'),aria-label=${dia.temFeriado} ? ${dia.numero} + ' - Feriado: ' + ${dia.nomeFeriado} : ${dia.numero}"
+                    th:text="${dia.numero}">1</button>
             <div th:if="${diasCalendario == null}" class="contents">
               <button class="calendar-date">1</button><button class="calendar-date">2</button><button class="calendar-date">3</button><button class="calendar-date">4</button><button class="calendar-date">5</button><button class="calendar-date">6</button><button class="calendar-date">7</button>
               <button class="calendar-date">8</button><button class="calendar-date">9</button><button class="calendar-date">10</button><button class="calendar-date selected">11</button><button class="calendar-date">12</button><button class="calendar-date has-event">13</button><button class="calendar-date">14</button>
@@ -267,6 +258,6 @@
 </div>
 
 <script src="https://unpkg.com/lucide@0.468.0"></script>
-<script th:src="@{/js/pages/dashboard.js}" src="/js/pages/dashboard.js"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
 </body>
 </html>

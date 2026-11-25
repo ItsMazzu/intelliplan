@@ -46,13 +46,9 @@
         <input type="search" placeholder="Buscar tarefas..." class="search-input w-full rounded-full py-3 pl-11 pr-4 text-sm outline-none">
       </div>
       <div class="flex items-center gap-3">
-        <button class="icon-button" aria-label="Notificações"><i data-lucide="bell"></i><span class="notification-dot"></span></button>
+        <div th:replace="~{fragments/notifications :: control}"></div>
         <div class="hidden h-8 border-l border-purple-100 sm:block"></div>
-        <button class="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-purple-50">
-          <div class="avatar avatar-small">LC</div>
-          <span class="hidden text-sm font-semibold sm:inline" th:text="${usuarioNome} ?: 'Laís'">Laís</span>
-          <i data-lucide="chevron-down" class="h-4 w-4"></i>
-        </button>
+        <div th:replace="~{fragments/profile :: topbar}"></div>
         <a th:href="@{/tarefas/nova}" href="/tarefas/nova" class="primary-button"><i data-lucide="plus" class="h-4 w-4"></i><span>Nova tarefa</span></a>
       </div>
     </header>
@@ -251,6 +247,6 @@
 </div>
 
 <script src="https://unpkg.com/lucide@0.468.0"></script>
-<script th:src="@{/js/pages/dashboard.js}" src="/js/pages/dashboard.js"></script>
+<script th:src="@{/js/components/modules.js}" src="/js/components/modules.js"></script>
 </body>
 </html>
