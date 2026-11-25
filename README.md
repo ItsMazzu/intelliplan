@@ -23,7 +23,7 @@ A plataforma combina uma interface web server-side desenvolvida com Thymeleaf, T
 A aplicação está organizada nos seguintes módulos:
 
 | Módulo | Implementação atual |
-|---|---|---|
+|---|---|
 | **Dashboard** | **Implementada.** Métricas do usuário, tarefas, projetos, estudos, hábitos e calendário de compromissos/feriados. |
 | **Tarefas** | **Implementada.** CRUD e filtros pela interface MVC/Thymeleaf; não há controller REST de tarefas neste checkout. |
 | **Projetos** | **Implementada.** Interface MVC e API REST; estados, datas e vínculo/progresso das tarefas. |
@@ -36,8 +36,6 @@ A aplicação está organizada nos seguintes módulos:
 | **Configurações** | **Implementada.** Perfil, alteração de senha e localização compartilhada pela instalação em `/configuracoes`. |
 | **Notificações** | **Implementada.** Central persistente por usuário, sincronizada ao abrir/solicitar atualização, com lembretes de tarefas, compromissos, hábitos e projetos. |
 | **Descrições formatadas** | **Implementada.** Markdown renderizado no navegador nos formulários e nas visualizações; o backend continua armazenando texto. |
-
----
 
 ## 3. Tecnologias e Ferramentas
 
