@@ -218,7 +218,7 @@ Endpoints autenticados:
 | **Dashboard com Dados Reais** | Concluído | Agregação completa de métricas, progresso e calendário sem erros em banco vazio. |
 | **Segurança da Aplicação** | Concluída | Login por sessão, BCrypt, CSRF ativo, logout seguro e restrição das APIs e páginas por autenticação. |
 | **Assistente de Primeira Execução** | Parcial | Teste e persistência da configuração PostgreSQL e criação da conta principal estão implementados; o assistente depende de o contexto Spring conseguir iniciar com uma conexão utilizável. |
-| **Telas Frontend dos Demais Módulos** | Planejada | Implementação das interfaces visuais completas de cadastro e listagem para tarefas, projetos, estudos, agenda e hábitos. |
+| **Telas Frontend dos Demais Módulos** | Concluídas | Implementação das interfaces visuais completas de cadastro e listagem para tarefas, projetos, estudos, agenda e hábitos. |
 
 ---
 
